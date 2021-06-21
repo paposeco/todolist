@@ -1,13 +1,23 @@
-class createProject {
-  constructor(title, description, dueDate, items) {
+import { creationTime } from "./createToDo.js";
+
+export { createNewProject, projectCreator };
+
+class projectCreator {
+  constructor(title, description, dueDate, creationDate) {
     this.title = title;
     this.description = description;
     this.dueDate = dueDate;
-    this.items = items;
+    this.creationDate = creationDate;
   }
 }
 
-export default function createNewProject() {
+function createNewProject() {
   return defaultProject;
 }
-const defaultProject = new createProject("Default", "Random list", "");
+const currentTime = creationTime();
+// const defaultProject = new createProject(
+//   "Default",
+//   "Random list",
+//   "31/10/2021",
+//   currentTime
+// );

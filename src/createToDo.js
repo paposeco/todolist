@@ -1,7 +1,14 @@
 import { compareAsc, format, getDate, getMonth, getYear } from "date-fns";
 
-export default function createToDo(itemnumber) {
-  return todo1;
+export { creationTime, toDoCreater };
+
+function creationTime() {
+  const now = Date.now();
+  const day = getDate(now);
+  const month = getMonth(now);
+  const year = getYear(now);
+  const finaldate = day + " " + month + " " + year;
+  return finaldate;
 }
 
 class toDoCreater {
@@ -22,15 +29,6 @@ class toDoCreater {
     this.notes = notes;
     this.checkList = checkList;
   }
-}
-
-function creationTime() {
-  const now = Date.now();
-  const day = getDate(now);
-  const month = getMonth(now);
-  const year = getYear(now);
-  const finaldate = day + " " + month + " " + year;
-  return finaldate;
 }
 
 const currentTime = creationTime();
