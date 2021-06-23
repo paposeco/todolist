@@ -7,7 +7,7 @@ function creationTime() {
   const day = getDate(now);
   const month = getMonth(now);
   const year = getYear(now);
-  const finaldate = day + " " + month + " " + year;
+  const finaldate = day + "/" + month + "/" + year;
   return finaldate;
 }
 
@@ -56,7 +56,7 @@ const createList = (function () {
       project
     );
     projectList.push(listItem);
-    //console.log(listItem);
+    console.log(listItem);
     return listItem;
   };
   return { newListItem, projectList };
