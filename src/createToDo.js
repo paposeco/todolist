@@ -19,7 +19,8 @@ class toDoCreater {
     priority,
     creationDate,
     notes,
-    checkList
+    checkList,
+    project
   ) {
     this.title = title;
     this.description = description;
@@ -28,6 +29,7 @@ class toDoCreater {
     this.creationDate = creationDate;
     this.notes = notes;
     this.checkList = checkList;
+    this.project = project;
   }
 }
 
