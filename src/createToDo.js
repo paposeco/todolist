@@ -1,6 +1,6 @@
 import { compareAsc, format, getDate, getMonth, getYear } from "date-fns";
 
-export { creationTime, toDoCreater };
+export { creationTime, createList };
 
 function creationTime() {
   const now = Date.now();
@@ -32,6 +32,35 @@ class toDoCreater {
     this.project = project;
   }
 }
+
+const createList = (function () {
+  let projectList = [];
+  const newListItem = function (
+    title,
+    description,
+    dueDate,
+    priority,
+    notes,
+    checkList,
+    project
+  ) {
+    let currentTime = creationTime();
+    const listItem = new toDoCreater(
+      title,
+      description,
+      dueDate,
+      priority,
+      currentTime,
+      notes,
+      checkList,
+      project
+    );
+    projectList.push(listItem);
+    //console.log(listItem);
+    return listItem;
+  };
+  return { newListItem, projectList };
+})();
 
 const currentTime = creationTime();
 const todo1 = new toDoCreater(

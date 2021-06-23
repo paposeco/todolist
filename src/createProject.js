@@ -1,14 +1,13 @@
-import { creationTime } from "./createToDo.js";
-
 export { createNewProject };
 
 class projectCreator {
-  constructor(title) {
+  constructor(title, items) {
     this.title = title;
+    this.items = [];
   }
 }
 
-function createNewProject(title) {
-  const newProject = new projectCreator(title);
+function createNewProject(title, items) {
+  const newProject = new projectCreator(title, items);
   return newProject;
 }
