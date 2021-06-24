@@ -20,34 +20,44 @@ function manageDom() {
   divAddProject.appendChild(addProjectButton);
 
   addProjectButton.addEventListener("click", function () {
-    const divs = document.querySelectorAll("div#content > div");
-    const numberOfProjects = divs.length;
-    const createDiv = document.createElement("div");
-    const projectTitle = window.prompt("Project Name:");
-    const projectName = "project" + numberOfProjects;
-    const createNewProject = projectCollection(projectTitle, projectName);
-    const divTitle = document.createElement("h2");
-    divTitle.textContent = createNewProject.title;
-    createDiv.setAttribute("id", "project" + numberOfProjects);
-    createDiv.setAttribute("class", "projectDiv");
-    divContent.appendChild(createDiv);
-    createDiv.appendChild(divTitle);
-    const currentDiv = document.getElementById("project" + numberOfProjects);
-    addItemButton(currentDiv);
-
-    const removeProjectButton = document.createElement("button");
-    removeProjectButton.setAttribute("class", "removeProject");
-    removeProjectButton.textContent = "Remove Project";
-    removeProjectButton.addEventListener("click", function () {
-      removeProject("project" + numberOfProjects);
-      console.log(projectsCreated);
-    });
-
-    createDiv.appendChild(removeProjectButton);
+    addProject(null);
   });
 }
 
-//mark as finished and remove item
+function addProject(name) {
+  const divContent = document.getElementById("content");
+  const divs = document.querySelectorAll("div#content > div");
+  const numberOfProjects = divs.length;
+  const createDiv = document.createElement("div");
+  let projectTitle;
+  if (name === null) {
+    projectTitle = window.prompt("Project Name:");
+  } else {
+    projectTitle = name;
+  }
+  const projectName = "project" + numberOfProjects;
+  const createNewProject = projectCollection(projectTitle, projectName);
+  const divTitle = document.createElement("h2");
+  divTitle.textContent = createNewProject.title;
+  createDiv.setAttribute("id", "project" + numberOfProjects);
+  createDiv.setAttribute("class", "projectDiv");
+  divContent.appendChild(createDiv);
+  createDiv.appendChild(divTitle);
+  const currentDiv = document.getElementById("project" + numberOfProjects);
+  addItemButton(currentDiv);
+
+  const removeProjectButton = document.createElement("button");
+  removeProjectButton.setAttribute("class", "removeProject");
+  removeProjectButton.textContent = "Remove Project";
+  removeProjectButton.addEventListener("click", function () {
+    removeProject("project" + numberOfProjects);
+    console.log(projectsCreated);
+  });
+
+  createDiv.appendChild(removeProjectButton);
+}
+
+//do nothing on add project cancel
 //cancel add
 // cant  press add item twice
 
@@ -108,9 +118,14 @@ function addItemToDom(item, currentDiv) {
   const div = document.createElement("div");
   const itemDivExisting = currentDiv.querySelectorAll("div.itemDiv").length;
   div.setAttribute("class", "itemDiv");
-  div.setAttribute("id", item.project + "item" + itemDivExisting);
+  div.setAttribute("id", item.itemID);
+  //div.setAttribute("id", item.project + "item" + itemDivExisting);
   const itemTitleDiv = document.createElement("div");
   itemTitleDiv.setAttribute("class", "itemTitle");
+
+  const itemStatusDiv = document.createElement("div");
+  itemStatusDiv.setAttribute("class", "itemStatus");
+
   const itemDescriptionDiv = document.createElement("div");
   itemDescriptionDiv.setAttribute("class", "itemDescription");
   const itemDueDateDiv = document.createElement("div");
@@ -125,6 +140,8 @@ function addItemToDom(item, currentDiv) {
   itemCheckListDiv.setAttribute("class", "itemCheckList");
 
   const itemTitle = document.createElement("h3");
+  const itemStatus = document.createElement("p");
+  const itemStatusSpan = document.createElement("span");
   const itemDescription = document.createElement("p");
   const itemDueDate = document.createElement("p");
   const itemCreationDate = document.createElement("p");
@@ -136,6 +153,12 @@ function addItemToDom(item, currentDiv) {
   if (item.description != "") {
     itemDescription.textContent = "Description: " + item.description;
   }
+  itemStatus.textContent = "Not Finished";
+  itemStatusSpan.style.width = "20px";
+  itemStatusSpan.style.height = "20px";
+  itemStatusSpan.style.display = "inline-block";
+  itemStatusSpan.style.backgroundColor = "red";
+
   if (item.dueDate != "") {
     itemDueDate.textContent = "Due" + item.dueDate;
   }
@@ -151,6 +174,9 @@ function addItemToDom(item, currentDiv) {
   currentDiv.appendChild(div);
   div.appendChild(itemTitleDiv);
   itemTitleDiv.appendChild(itemTitle);
+  div.appendChild(itemStatusDiv);
+  itemStatusDiv.appendChild(itemStatus);
+  itemStatusDiv.appendChild(itemStatusSpan);
   div.appendChild(itemDescriptionDiv);
   itemDescriptionDiv.appendChild(itemDescription);
   div.appendChild(itemDueDateDiv);
@@ -163,6 +189,10 @@ function addItemToDom(item, currentDiv) {
   itemNotesDiv.appendChild(itemNotes);
   div.appendChild(itemCheckListDiv);
   itemCheckListDiv.appendChild(itemCheckList);
+
+  itemStatusSpan.addEventListener("click", function () {
+    markItemAsDone(item);
+  });
 }
 
 function addItemForm(currentDiv, formDiv) {
@@ -277,3 +307,48 @@ function removeProject(divID) {
     }
   }
 }
+
+function markItemAsDone(item) {
+  item.done = true;
+  const itemDiv = document.getElementById(item.itemID);
+  const itemStatusDivP = itemDiv.querySelector(".itemStatus > p");
+  const itemStatusDivSpan = itemDiv.querySelector(".itemStatus > span");
+
+  itemStatusDivP.textContent = "Done!";
+  itemStatusDivSpan.style.width = "0px";
+  itemStatusDivSpan.style.height = "0px";
+  itemStatusDivSpan.style.display = "inline";
+  itemStatusDivSpan.style.backgroundColor = "none";
+}
+
+//tenho de mudar os valores dos arrays dos items existentes. nao sei se sabem o status agora. o valor dos items esta a mudar, mas +e melhor confirmar.
+// nos remove tb tenho de remover de storage e quando marco como done tb tenho de actualizar em storage
+function retrieveItemsFromStorage() {
+  const storedItems = window.localStorage;
+  if (storedItems.length != 0) {
+    for (let i = 0; i < storedItems.length; i++) {
+      const jsonString = storedItems.getItem(storedItems.key(i));
+      const obj = JSON.parse(jsonString);
+      const objProject = obj.project;
+      // se for default nao faças nada
+      if (objProject === "default") {
+        const defaultDiv = document.getElementById("default");
+        addItemToDom(obj, defaultDiv);
+        removeItemButton(obj);
+      } else {
+        let projectDiv = document.getElementById(obj.project);
+        if (projectDiv === null) {
+          addProject(obj.title);
+          projectDiv = document.getElementById(obj.project);
+        }
+
+        addItemToDom(obj, projectDiv);
+        removeItemButton(obj);
+      }
+    }
+  }
+}
+
+window.onload = retrieveItemsFromStorage;
+
+//tenho de actualizar os arrays com os valores em storage
