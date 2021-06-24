@@ -20,7 +20,9 @@ class toDoCreater {
     creationDate,
     notes,
     checkList,
-    project
+    project,
+    itemNumberInProject,
+    done
   ) {
     this.title = title;
     this.description = description;
@@ -30,22 +32,37 @@ class toDoCreater {
     this.notes = notes;
     this.checkList = checkList;
     this.project = project;
+    this.done = done;
+    this.itemID = project + "item" + itemNumberInProject;
   }
 }
 
 const createList = (function () {
-  let projectList = [];
-  const newListItem = function (
+  let itemList = [];
+  const updateItemList = function (newlist, addorremove, item) {
+    if (addorremove === "add") {
+      itemList.push(item);
+      return itemList;
+    } else if (newlist === null && addorremove === null && item === null) {
+      return itemList;
+    } else {
+      itemList = newlist;
+      return itemList;
+    }
+  };
+
+  const createNewItem = function (
     title,
     description,
     dueDate,
     priority,
     notes,
     checkList,
-    project
+    project,
+    itemNumberInProject
   ) {
-    let currentTime = creationTime();
-    const listItem = new toDoCreater(
+    const currentTime = creationTime();
+    const newItem = new toDoCreater(
       title,
       description,
       dueDate,
@@ -53,32 +70,23 @@ const createList = (function () {
       currentTime,
       notes,
       checkList,
-      project
+      project,
+      itemNumberInProject,
+      false
     );
-    projectList.push(listItem);
-    console.log(listItem);
-    return listItem;
+    console.log(newItem);
+    itemList = updateItemList(itemList, "add", newItem);
+    return newItem;
   };
-  return { newListItem, projectList };
+  const removeItemFromList = function (item) {
+    for (let i = 0; i < itemList.length; i++) {
+      const currentItemOnList = itemList[i];
+      if (currentItemOnList.itemID === item.itemID) {
+        let newlist = itemList.slice(0, i).concat(itemList.slice(i + 1));
+        itemList = updateItemList(newlist, "remove", null);
+        // return itemList;
+      }
+    }
+  };
+  return { createNewItem, updateItemList, removeItemFromList };
 })();
-
-const currentTime = creationTime();
-const todo1 = new toDoCreater(
-  "trash day",
-  "take out trash",
-  "10/10/2021",
-  "5",
-  currentTime,
-  "just do it",
-  "none"
-);
-
-const todo2 = new toDoCreater(
-  "buy food",
-  "go to the supermarket",
-  "12/10/2021",
-  "4",
-  currentTime,
-  "olive oil",
-  "none"
-);

@@ -40,11 +40,16 @@ function manageDom() {
     removeProjectButton.textContent = "Remove Project";
     removeProjectButton.addEventListener("click", function () {
       removeProject("project" + numberOfProjects);
+      console.log(projectsCreated);
     });
 
     createDiv.appendChild(removeProjectButton);
   });
 }
+
+//mark as finished and remove item
+//cancel add
+// cant  press add item twice
 
 function addItemButton(currentDiv) {
   const formDiv = document.createElement("div");
@@ -58,6 +63,7 @@ function addItemButton(currentDiv) {
   currentDiv.appendChild(formDiv);
   createbutton.addEventListener("click", function () {
     addItemForm(currentDiv, formDiv);
+    const titleFocus = document.getElementById("title").focus();
     document.querySelector("form").addEventListener("submit", (e) => {
       e.preventDefault();
       const formData = new FormData(e.target);
@@ -67,27 +73,42 @@ function addItemButton(currentDiv) {
         // console.log(pair[0] + ", " + pair[1]);
       }
       const currentProject = currentDiv.id;
-      const newitem = createList.newListItem(
+      const itemDivExisting = currentDiv.querySelectorAll("div.itemDiv").length;
+      const newitem = createList.createNewItem(
         itemInfo[0],
         itemInfo[1],
         itemInfo[2],
         itemInfo[3],
         itemInfo[4],
         itemInfo[5],
-        currentProject
+        currentProject,
+        itemDivExisting
       );
-      //const currentProjectItemsArray = projectsCreated[0].items;
-      // currentProjectItemsArray.push(newitem);
       addItemToDom(newitem, currentDiv);
+      removeItemButton(newitem);
       const currentForm = document.getElementById("form" + currentDiv.id);
       currentForm.remove();
     });
   });
 }
 
+function removeItemButton(item) {
+  const currentItem = document.getElementById(item.itemID);
+  const removeItemBut = document.createElement("button");
+  removeItemBut.setAttribute("class", "removeItem");
+  removeItemBut.textContent = "Remove Item";
+  removeItemBut.addEventListener("click", function () {
+    currentItem.remove();
+    createList.removeItemFromList(item);
+  });
+  currentItem.appendChild(removeItemBut);
+}
+
 function addItemToDom(item, currentDiv) {
   const div = document.createElement("div");
+  const itemDivExisting = currentDiv.querySelectorAll("div.itemDiv").length;
   div.setAttribute("class", "itemDiv");
+  div.setAttribute("id", item.project + "item" + itemDivExisting);
   const itemTitleDiv = document.createElement("div");
   itemTitleDiv.setAttribute("class", "itemTitle");
   const itemDescriptionDiv = document.createElement("div");
@@ -160,6 +181,7 @@ function addItemForm(currentDiv, formDiv) {
   input1.setAttribute("type", "title");
   input1.setAttribute("name", "title");
   input1.setAttribute("id", "title");
+
   input1.required = true;
   div1.appendChild(label1);
   div1.appendChild(input1);
