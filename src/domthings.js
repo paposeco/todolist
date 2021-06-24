@@ -3,8 +3,8 @@ import { createList } from "./createToDo.js";
 export { manageDom };
 
 let projectsCreated = [];
-function projectCollection(title) {
-  const newProject = createNewProject(title, []);
+function projectCollection(title, name) {
+  const newProject = createNewProject(title, name, []);
   projectsCreated.push(newProject);
   return newProject;
 }
@@ -23,16 +23,26 @@ function manageDom() {
     const divs = document.querySelectorAll("div#content > div");
     const numberOfProjects = divs.length;
     const createDiv = document.createElement("div");
-    const projectName = window.prompt("Project Name:");
-    const createNewProject = projectCollection(projectName);
+    const projectTitle = window.prompt("Project Name:");
+    const projectName = "project" + numberOfProjects;
+    const createNewProject = projectCollection(projectTitle, projectName);
     const divTitle = document.createElement("h2");
     divTitle.textContent = createNewProject.title;
     createDiv.setAttribute("id", "project" + numberOfProjects);
+    createDiv.setAttribute("class", "projectDiv");
     divContent.appendChild(createDiv);
     createDiv.appendChild(divTitle);
     const currentDiv = document.getElementById("project" + numberOfProjects);
     addItemButton(currentDiv);
-    console.log(projectsCreated);
+
+    const removeProjectButton = document.createElement("button");
+    removeProjectButton.setAttribute("class", "removeProject");
+    removeProjectButton.textContent = "Remove Project";
+    removeProjectButton.addEventListener("click", function () {
+      removeProject("project" + numberOfProjects);
+    });
+
+    createDiv.appendChild(removeProjectButton);
   });
 }
 
@@ -229,4 +239,19 @@ function addItemForm(currentDiv, formDiv) {
   form.appendChild(div5);
   form.appendChild(div6);
   form.appendChild(div7);
+}
+
+function removeProject(divID) {
+  const currentDiv = document.getElementById(divID);
+  currentDiv.remove();
+  for (let i = 0; i < projectsCreated.length; i++) {
+    let project = projectsCreated[i];
+    if (project.name === divID) {
+      let updatedProjectsCreated = projectsCreated
+        .slice(0, i)
+        .concat(projectsCreated.slice(i + 1));
+      projectsCreated = updatedProjectsCreated;
+      return projectsCreated;
+    }
+  }
 }
