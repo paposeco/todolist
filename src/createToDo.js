@@ -75,7 +75,6 @@ const createList = (function () {
       false
     );
     itemList = updateItemList(itemList, "add", newItem);
-    console.log(newItem);
     const itemStorageName = newItem.itemID;
     const itemForStorage = JSON.stringify(newItem);
     localStorage.setItem(itemStorageName, itemForStorage);

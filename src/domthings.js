@@ -74,41 +74,84 @@ function addItemButton(currentDiv) {
     if (formDivAlreadyExists !== null && formDivAlreadyExists.hasChildNodes()) {
       return;
     }
-    addItemForm(currentDiv, formDiv);
+    addItemForm(currentDiv, formDiv, "new");
+    formHandler(currentDiv);
+  });
+}
 
-    // function to deal after form is created
-    const cancelButton = document.getElementById("cancelAdd");
-    cancelButton.addEventListener("click", function () {
-      const currentForm = document.getElementById("form" + currentDiv.id);
-      currentForm.remove();
-    });
-    const titleFocus = document.getElementById("title").focus();
-    document.querySelector("form").addEventListener("submit", (e) => {
-      e.preventDefault();
-      const formData = new FormData(e.target);
-      let itemInfo = [];
-      for (const pair of formData.entries()) {
-        itemInfo.push(pair[1]);
-        // console.log(pair[0] + ", " + pair[1]);
+function formHandler(currentDiv) {
+  const cancelButton = document.getElementById("cancelAdd");
+  cancelButton.addEventListener("click", function () {
+    const currentForm = document.getElementById("form" + currentDiv.id);
+    currentForm.remove();
+  });
+  const titleFocus = document.getElementById("title").focus();
+  document.querySelector("form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    let itemInfo = [];
+    for (const pair of formData.entries()) {
+      itemInfo.push(pair[1]);
+      // console.log(pair[0] + ", " + pair[1]);
+    }
+    const currentProject = currentDiv.id;
+    const itemDivExisting = currentDiv.querySelectorAll("div.itemDiv").length;
+    const newitem = createList.createNewItem(
+      itemInfo[0],
+      itemInfo[1],
+      itemInfo[2],
+      itemInfo[3],
+      itemInfo[4],
+      itemInfo[5],
+      currentProject,
+      itemDivExisting
+    );
+
+    addItemToDom(newitem, currentDiv);
+    removeItemButton(newitem);
+    editItemButton(newitem);
+    const currentForm = document.getElementById("form" + currentDiv.id);
+    currentForm.remove();
+  });
+}
+
+function formHandlerEdit(currentDiv) {
+  const titleFocus = document.getElementById("title").focus();
+  document.querySelector("form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    let itemInfo = [];
+    for (const pair of formData.entries()) {
+      itemInfo.push(pair[1]);
+      // console.log(pair[0] + ", " + pair[1]);
+    }
+    const currentItemList = createList.updateItemList(null, null, null);
+    let currentItem;
+    for (let i = 0; i < currentItemList.length; i++) {
+      currentItem = currentItemList[i];
+      console.log(currentItem.itemID);
+      console.log(currentDiv.id);
+      if (currentItem.itemID === currentDiv.id) {
+        break;
       }
-      const currentProject = currentDiv.id;
-      const itemDivExisting = currentDiv.querySelectorAll("div.itemDiv").length;
-      const newitem = createList.createNewItem(
-        itemInfo[0],
-        itemInfo[1],
-        itemInfo[2],
-        itemInfo[3],
-        itemInfo[4],
-        itemInfo[5],
-        currentProject,
-        itemDivExisting
-      );
-      addItemToDom(newitem, currentDiv);
-      removeItemButton(newitem);
-      editItemButton(newitem);
-      const currentForm = document.getElementById("form" + currentDiv.id);
-      currentForm.remove();
-    });
+    }
+    currentItem.title = itemInfo[0];
+    currentItem.description = itemInfo[1];
+    currentItem.dueDate = itemInfo[2];
+    currentItem.priority = itemInfo[3];
+    currentItem.notes = itemInfo[4];
+    currentItem.checkList = itemInfo[5];
+
+    const storedItems = window.localStorage;
+    const currentItemID = currentItem.itemID;
+    const itemForStorageUpdated = JSON.stringify(currentItem);
+    storedItems.setItem(currentItemID, itemForStorageUpdated);
+
+    addItemToDom(currentItem, currentDiv);
+    removeItemButton(currentItem);
+    editItemButton(currentItem);
+    const currentForm = document.getElementById("form" + currentDiv.id);
+    currentForm.remove();
   });
 }
 
@@ -128,7 +171,7 @@ function removeItemButton(item) {
 
 function addItemToDom(item, currentDiv) {
   const div = document.createElement("div");
-  const itemDivExisting = currentDiv.querySelectorAll("div.itemDiv").length;
+  //const itemDivExisting = currentDiv.querySelectorAll("div.itemDiv").length;
   div.setAttribute("class", "itemDiv");
   div.setAttribute("id", item.itemID);
   //div.setAttribute("id", item.project + "item" + itemDivExisting);
@@ -207,7 +250,7 @@ function addItemToDom(item, currentDiv) {
   });
 }
 
-function addItemForm(currentDiv, formDiv) {
+function addItemForm(currentDiv, formDiv, neworedit) {
   const form = document.createElement("form");
   form.setAttribute("method", "get");
   form.setAttribute("class", "formNewItem");
@@ -289,20 +332,9 @@ function addItemForm(currentDiv, formDiv) {
   div6.appendChild(input6);
 
   const div7 = document.createElement("div");
-  div7.setAttribute("class", "formNewItem");
-  const input7 = document.createElement("input");
-  input7.setAttribute("type", "submit");
-  input7.setAttribute("value", "Add");
-  div7.appendChild(input7);
-
   const div8 = document.createElement("div");
-  div8.setAttribute("class", "formNewItem");
-  const input8 = document.createElement("input");
-  input8.setAttribute("type", "button");
-  input8.setAttribute("value", "Cancel");
-  input8.setAttribute("id", "cancelAdd");
-  div8.appendChild(input8);
 
+  currentDiv.appendChild(formDiv);
   formDiv.appendChild(form);
   form.appendChild(div1);
   form.appendChild(div2);
@@ -310,8 +342,32 @@ function addItemForm(currentDiv, formDiv) {
   form.appendChild(div4);
   form.appendChild(div5);
   form.appendChild(div6);
-  form.appendChild(div7);
-  form.appendChild(div8);
+
+  if (neworedit === "new") {
+    div7.setAttribute("class", "formNewItem");
+    const input7 = document.createElement("input");
+    input7.setAttribute("type", "submit");
+    input7.setAttribute("value", "Add");
+    div7.appendChild(input7);
+
+    div8.setAttribute("class", "formNewItem");
+    const input8 = document.createElement("input");
+    input8.setAttribute("type", "button");
+    input8.setAttribute("value", "Cancel");
+    input8.setAttribute("id", "cancelAdd");
+    div8.appendChild(input8);
+
+    form.appendChild(div7);
+    form.appendChild(div8);
+  } else {
+    div7.setAttribute("class", "formNewItem");
+    const input7 = document.createElement("input");
+    input7.setAttribute("type", "submit");
+    input7.setAttribute("value", "save");
+    div7.appendChild(input7);
+
+    form.appendChild(div7);
+  }
 }
 
 function removeProject(divID) {
@@ -332,9 +388,16 @@ function removeProject(divID) {
   for (let j = 0; j < currentItemList.length; j++) {
     const currentItem = currentItemList[j];
     const itemProject = currentItem.project;
+    const itemName = currentItem.name;
     if (itemProject === divID) {
       createList.removeItemFromList(currentItem);
       storedItems.removeItem(currentItem.itemID);
+    }
+  }
+  for (let k = 0; k < storedItems.length; k++) {
+    const storedItemKey = storedItems.key(k);
+    if (storedItemKey === divID) {
+      storedItems.removeItem(storedItemKey);
     }
   }
   return projectsCreated;
@@ -347,6 +410,10 @@ function markItemAsDone(item) {
   const itemForStorageUpdated = JSON.stringify(item);
   storedItems.setItem(currentItemID, itemForStorageUpdated);
   styleItem(item);
+
+  const currentDiv = document.getElementById(item.itemID);
+  const editButton = currentDiv.querySelector(".editItem");
+  editButton.remove();
 }
 
 function styleItem(item) {
@@ -370,6 +437,7 @@ function retrieveItemsFromStorage() {
       if (objProject === "default") {
         const defaultDiv = document.getElementById("default");
         addItemToDom(obj, defaultDiv);
+        createList.updateItemList(null, "add", obj);
         if (obj.done) {
           styleItem(obj);
         }
@@ -380,9 +448,11 @@ function retrieveItemsFromStorage() {
         if (projectDiv === null) {
           addProject(obj.title);
           projectDiv = document.getElementById(obj.project);
+          continue;
         }
 
         addItemToDom(obj, projectDiv);
+        createList.updateItemList(null, "add", obj);
         if (obj.done) {
           styleItem(obj);
         }
@@ -394,11 +464,20 @@ function retrieveItemsFromStorage() {
 }
 
 function editItemButton(item) {
+  if (item.done) {
+    return;
+  }
   const currentDiv = document.getElementById(item.itemID);
   const editItemBut = document.createElement("button");
   editItemBut.setAttribute("class", "editItem");
   editItemBut.textContent = "Edit";
   editItemBut.addEventListener("click", function () {
+    const formExists = document.querySelector("form");
+    if (formExists !== null) {
+      alert("Finish editing previous item first.");
+      return;
+    }
+    currentDiv.replaceChildren();
     editItem(item);
   });
   currentDiv.appendChild(editItemBut);
@@ -406,8 +485,9 @@ function editItemButton(item) {
 
 function editItem(item) {
   const currentDiv = document.getElementById(item.itemID);
+  console.log(currentDiv);
   const formDiv = document.querySelector(".formDiv");
-  addItemForm(currentDiv, formDiv);
+  addItemForm(currentDiv, formDiv, "edit");
   const inputTitle = document.getElementById("title");
   const inputDescription = document.getElementById("description");
   const inputDueDate = document.getElementById("dueDate");
@@ -420,6 +500,7 @@ function editItem(item) {
   inputPriority.value = item.priority;
   inputNotes.value = item.notes;
   inputCheckList.value = item.checkList;
+  formHandlerEdit(currentDiv);
 }
 
 window.onload = retrieveItemsFromStorage;
@@ -430,4 +511,4 @@ window.onload = retrieveItemsFromStorage;
 //checklist
 //on click extend
 
-//Cant edit finished items
+//local storage projecto novo sem items
