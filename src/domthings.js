@@ -32,6 +32,9 @@ function addProject(name) {
   let projectTitle;
   if (name === null) {
     projectTitle = window.prompt("Project Name:");
+    if (projectTitle === (null || "")) {
+      return;
+    }
   } else {
     projectTitle = name;
   }
@@ -51,15 +54,10 @@ function addProject(name) {
   removeProjectButton.textContent = "Remove Project";
   removeProjectButton.addEventListener("click", function () {
     removeProject("project" + numberOfProjects);
-    console.log(projectsCreated);
   });
 
   createDiv.appendChild(removeProjectButton);
 }
-
-//do nothing on add project cancel
-//cancel add
-// cant  press add item twice
 
 function addItemButton(currentDiv) {
   const formDiv = document.createElement("div");
@@ -72,7 +70,18 @@ function addItemButton(currentDiv) {
   currentDiv.appendChild(createbutton);
   currentDiv.appendChild(formDiv);
   createbutton.addEventListener("click", function () {
+    const formDivAlreadyExists = document.querySelector(".formDiv");
+    if (formDivAlreadyExists !== null && formDivAlreadyExists.hasChildNodes()) {
+      return;
+    }
     addItemForm(currentDiv, formDiv);
+
+    // function to deal after form is created
+    const cancelButton = document.getElementById("cancelAdd");
+    cancelButton.addEventListener("click", function () {
+      const currentForm = document.getElementById("form" + currentDiv.id);
+      currentForm.remove();
+    });
     const titleFocus = document.getElementById("title").focus();
     document.querySelector("form").addEventListener("submit", (e) => {
       e.preventDefault();
@@ -96,6 +105,7 @@ function addItemButton(currentDiv) {
       );
       addItemToDom(newitem, currentDiv);
       removeItemButton(newitem);
+      editItemButton(newitem);
       const currentForm = document.getElementById("form" + currentDiv.id);
       currentForm.remove();
     });
@@ -103,6 +113,7 @@ function addItemButton(currentDiv) {
 }
 
 function removeItemButton(item) {
+  const storedItems = window.localStorage;
   const currentItem = document.getElementById(item.itemID);
   const removeItemBut = document.createElement("button");
   removeItemBut.setAttribute("class", "removeItem");
@@ -110,6 +121,7 @@ function removeItemButton(item) {
   removeItemBut.addEventListener("click", function () {
     currentItem.remove();
     createList.removeItemFromList(item);
+    storedItems.removeItem(item.itemID);
   });
   currentItem.appendChild(removeItemBut);
 }
@@ -160,7 +172,7 @@ function addItemToDom(item, currentDiv) {
   itemStatusSpan.style.backgroundColor = "red";
 
   if (item.dueDate != "") {
-    itemDueDate.textContent = "Due" + item.dueDate;
+    itemDueDate.textContent = "Due: " + item.dueDate;
   }
   itemCreationDate.textContent = "Created: " + item.creationDate;
   if (item.priority != "") {
@@ -283,6 +295,14 @@ function addItemForm(currentDiv, formDiv) {
   input7.setAttribute("value", "Add");
   div7.appendChild(input7);
 
+  const div8 = document.createElement("div");
+  div8.setAttribute("class", "formNewItem");
+  const input8 = document.createElement("input");
+  input8.setAttribute("type", "button");
+  input8.setAttribute("value", "Cancel");
+  input8.setAttribute("id", "cancelAdd");
+  div8.appendChild(input8);
+
   formDiv.appendChild(form);
   form.appendChild(div1);
   form.appendChild(div2);
@@ -291,10 +311,12 @@ function addItemForm(currentDiv, formDiv) {
   form.appendChild(div5);
   form.appendChild(div6);
   form.appendChild(div7);
+  form.appendChild(div8);
 }
 
 function removeProject(divID) {
   const currentDiv = document.getElementById(divID);
+  const currentItemList = createList.updateItemList(null, null, null);
   currentDiv.remove();
   for (let i = 0; i < projectsCreated.length; i++) {
     let project = projectsCreated[i];
@@ -303,17 +325,34 @@ function removeProject(divID) {
         .slice(0, i)
         .concat(projectsCreated.slice(i + 1));
       projectsCreated = updatedProjectsCreated;
-      return projectsCreated;
+      break;
     }
   }
+  const storedItems = window.localStorage;
+  for (let j = 0; j < currentItemList.length; j++) {
+    const currentItem = currentItemList[j];
+    const itemProject = currentItem.project;
+    if (itemProject === divID) {
+      createList.removeItemFromList(currentItem);
+      storedItems.removeItem(currentItem.itemID);
+    }
+  }
+  return projectsCreated;
 }
 
 function markItemAsDone(item) {
   item.done = true;
+  const storedItems = window.localStorage;
+  const currentItemID = item.itemID;
+  const itemForStorageUpdated = JSON.stringify(item);
+  storedItems.setItem(currentItemID, itemForStorageUpdated);
+  styleItem(item);
+}
+
+function styleItem(item) {
   const itemDiv = document.getElementById(item.itemID);
   const itemStatusDivP = itemDiv.querySelector(".itemStatus > p");
   const itemStatusDivSpan = itemDiv.querySelector(".itemStatus > span");
-
   itemStatusDivP.textContent = "Done!";
   itemStatusDivSpan.style.width = "0px";
   itemStatusDivSpan.style.height = "0px";
@@ -321,8 +360,6 @@ function markItemAsDone(item) {
   itemStatusDivSpan.style.backgroundColor = "none";
 }
 
-//tenho de mudar os valores dos arrays dos items existentes. nao sei se sabem o status agora. o valor dos items esta a mudar, mas +e melhor confirmar.
-// nos remove tb tenho de remover de storage e quando marco como done tb tenho de actualizar em storage
 function retrieveItemsFromStorage() {
   const storedItems = window.localStorage;
   if (storedItems.length != 0) {
@@ -330,11 +367,14 @@ function retrieveItemsFromStorage() {
       const jsonString = storedItems.getItem(storedItems.key(i));
       const obj = JSON.parse(jsonString);
       const objProject = obj.project;
-      // se for default nao faças nada
       if (objProject === "default") {
         const defaultDiv = document.getElementById("default");
         addItemToDom(obj, defaultDiv);
+        if (obj.done) {
+          styleItem(obj);
+        }
         removeItemButton(obj);
+        editItemButton(obj);
       } else {
         let projectDiv = document.getElementById(obj.project);
         if (projectDiv === null) {
@@ -343,12 +383,51 @@ function retrieveItemsFromStorage() {
         }
 
         addItemToDom(obj, projectDiv);
+        if (obj.done) {
+          styleItem(obj);
+        }
         removeItemButton(obj);
+        editItemButton(obj);
       }
     }
   }
 }
 
+function editItemButton(item) {
+  const currentDiv = document.getElementById(item.itemID);
+  const editItemBut = document.createElement("button");
+  editItemBut.setAttribute("class", "editItem");
+  editItemBut.textContent = "Edit";
+  editItemBut.addEventListener("click", function () {
+    editItem(item);
+  });
+  currentDiv.appendChild(editItemBut);
+}
+
+function editItem(item) {
+  const currentDiv = document.getElementById(item.itemID);
+  const formDiv = document.querySelector(".formDiv");
+  addItemForm(currentDiv, formDiv);
+  const inputTitle = document.getElementById("title");
+  const inputDescription = document.getElementById("description");
+  const inputDueDate = document.getElementById("dueDate");
+  const inputPriority = document.getElementById("priority");
+  const inputNotes = document.getElementById("notes");
+  const inputCheckList = document.getElementById("checkList");
+  inputTitle.value = item.title;
+  inputDescription.value = item.description;
+  inputDueDate.value = item.dueDate;
+  inputPriority.value = item.priority;
+  inputNotes.value = item.notes;
+  inputCheckList.value = item.checkList;
+}
+
 window.onload = retrieveItemsFromStorage;
 
-//tenho de actualizar os arrays com os valores em storage
+//edit button
+// organize todos by date
+// form validation
+//checklist
+//on click extend
+
+//Cant edit finished items
