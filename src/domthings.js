@@ -1,5 +1,5 @@
 import { createNewProject } from "./createProject.js";
-import { createList } from "./createToDo.js";
+import { creationTime, createList } from "./createToDo.js";
 export { manageDom };
 
 let projectsCreated = [];
@@ -202,7 +202,13 @@ function addItemToDom(item, currentDiv) {
   const itemCreationDate = document.createElement("p");
   const itemPriority = document.createElement("p");
   const itemNotes = document.createElement("p");
-  const itemCheckList = document.createElement("p");
+  let itemCheckList;
+  if (item.checkList.trimEnd() !== "") {
+    itemCheckList = makeListFromInput(item.checkList);
+  } else {
+    itemCheckList = document.createElement("p");
+    itemCheckList.textContent = item.checkList;
+  }
 
   itemTitle.textContent = item.title;
   if (item.description != "") {
@@ -224,7 +230,6 @@ function addItemToDom(item, currentDiv) {
   if (item.notes != "") {
     itemNotes.textContent = "Notes: " + item.notes;
   }
-  itemCheckList.textContent = item.checkList;
 
   currentDiv.appendChild(div);
   div.appendChild(itemTitleDiv);
@@ -263,7 +268,7 @@ function addItemForm(currentDiv, formDiv, neworedit) {
   label1.setAttribute("for", "title");
   label1.textContent = "Title: ";
   const input1 = document.createElement("input");
-  input1.setAttribute("type", "title");
+  input1.setAttribute("type", "text");
   input1.setAttribute("name", "title");
   input1.setAttribute("id", "title");
 
@@ -277,21 +282,24 @@ function addItemForm(currentDiv, formDiv, neworedit) {
   label2.setAttribute("for", "description");
   label2.textContent = "Description: ";
   const input2 = document.createElement("input");
-  input2.setAttribute("type", "description");
+  input2.setAttribute("type", "text");
   input2.setAttribute("name", "description");
   input2.setAttribute("id", "description");
   div2.appendChild(label2);
   div2.appendChild(input2);
 
+  const currentTime = creationTime();
   const div3 = document.createElement("div");
   div3.setAttribute("class", "formNewItem");
   const label3 = document.createElement("label");
   label3.setAttribute("for", "dueDate");
   label3.textContent = "Due date: ";
   const input3 = document.createElement("input");
-  input3.setAttribute("type", "dueDate");
+  input3.setAttribute("type", "date");
   input3.setAttribute("name", "dueDate");
   input3.setAttribute("id", "dueDate");
+  input3.setAttribute("value", "YYYY-MM-DD");
+  input3.setAttribute("min", currentTime);
   div3.appendChild(label3);
   div3.appendChild(input3);
 
@@ -321,7 +329,7 @@ function addItemForm(currentDiv, formDiv, neworedit) {
   label5.setAttribute("for", "notes");
   label5.textContent = "Notes: ";
   const input5 = document.createElement("input");
-  input5.setAttribute("type", "notes");
+  input5.setAttribute("type", "text");
   input5.setAttribute("name", "notes");
   input5.setAttribute("id", "notes");
   div5.appendChild(label5);
@@ -333,7 +341,7 @@ function addItemForm(currentDiv, formDiv, neworedit) {
   label6.setAttribute("for", "checkList");
   label6.textContent = "Check List: ";
   const input6 = document.createElement("input");
-  input6.setAttribute("type", "checkList");
+  input6.setAttribute("type", "text");
   input6.setAttribute("name", "checkList");
   input6.setAttribute("id", "checkList");
   div6.appendChild(label6);
@@ -513,10 +521,17 @@ function editItem(item) {
 
 window.onload = retrieveItemsFromStorage;
 
-//edit button
 // organize todos by date
-// form validation
-//checklist
 //on click extend
 
-//input type esta mal
+function makeListFromInput(checkList) {
+  const checkListString = checkList;
+  const ul = document.createElement("ul");
+  const checkListArray = checkListString.split(";");
+  for (let i = 0; i < checkListArray.length; i++) {
+    const li = document.createElement("li");
+    li.textContent = checkListArray[i];
+    ul.appendChild(li);
+  }
+  return ul;
+}

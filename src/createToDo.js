@@ -4,11 +4,8 @@ export { creationTime, createList };
 
 function creationTime() {
   const now = Date.now();
-  const day = getDate(now);
-  const month = getMonth(now);
-  const year = getYear(now);
-  const finaldate = day + "/" + month + "/" + year;
-  return finaldate;
+  const formatedDate = format(now, "yyyy-MM-dd");
+  return formatedDate;
 }
 
 class toDoCreater {
