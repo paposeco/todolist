@@ -300,10 +300,18 @@ function addItemForm(currentDiv, formDiv, neworedit) {
   const label4 = document.createElement("label");
   label4.setAttribute("for", "priority");
   label4.textContent = "Priority: ";
-  const input4 = document.createElement("input");
-  input4.setAttribute("type", "priority");
+  const input4 = document.createElement("select");
+  //input4.setAttribute("type", "priority");
   input4.setAttribute("name", "priority");
   input4.setAttribute("id", "priority");
+
+  for (let i = 1; i < 6; i++) {
+    const newSelectOption = document.createElement("option");
+    newSelectOption.setAttribute("value", i);
+    newSelectOption.textContent = i;
+    input4.appendChild(newSelectOption);
+  }
+
   div4.appendChild(label4);
   div4.appendChild(input4);
 
@@ -511,4 +519,4 @@ window.onload = retrieveItemsFromStorage;
 //checklist
 //on click extend
 
-//local storage projecto novo sem items
+//input type esta mal
