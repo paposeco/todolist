@@ -1,4 +1,5 @@
 import { compareAsc, format, getDate, getMonth, getYear } from "date-fns";
+import { createProject } from "./createProject.js";
 
 export { creationTime, createList };
 
@@ -38,6 +39,7 @@ const createList = (function () {
   let itemList = [];
   const updateItemList = function (newlist, addorremove, item) {
     if (addorremove === "add") {
+      //createProject.addItemToProject(item.project, item);
       itemList.push(item);
       return itemList;
     } else if (newlist === null && addorremove === null && item === null) {
@@ -71,6 +73,7 @@ const createList = (function () {
       itemNumberInProject,
       false
     );
+    //createProject.addItemToProject(project, newItem);
     itemList = updateItemList(itemList, "add", newItem);
     const itemStorageName = newItem.itemID;
     const itemForStorage = JSON.stringify(newItem);
@@ -83,7 +86,6 @@ const createList = (function () {
       if (currentItemOnList.itemID === item.itemID) {
         let newlist = itemList.slice(0, i).concat(itemList.slice(i + 1));
         itemList = updateItemList(newlist, "remove", null);
-        // return itemList;
       }
     }
   };

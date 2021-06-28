@@ -1,59 +1,61 @@
-import { createNewProject } from "./createProject.js";
+import { createProject } from "./createProject.js";
 import { creationTime, createList } from "./createToDo.js";
 export { manageDom };
 
-let projectsCreated = [];
-function projectCollection(title, name) {
-  const newProject = createNewProject(title, name, []);
-  projectsCreated.push(newProject);
-  return newProject;
-}
-
 function manageDom() {
   const divContent = document.getElementById("content");
-  const divDefault = document.getElementById("default");
-  addItemButton(divDefault);
+  // const divDefault = document.getElementById("default");
+  // addItemButton(divDefault);
   const addProjectButton = document.createElement("button");
   addProjectButton.textContent = "Add new Project";
   addProjectButton.setAttribute("id", "addnewproject");
   const divAddProject = document.getElementById("addProject");
   divAddProject.appendChild(addProjectButton);
-
+  addProject("default");
   addProjectButton.addEventListener("click", function () {
     addProject(null);
   });
 }
 
-function addProject(name) {
+function addProject(obj) {
   const divContent = document.getElementById("content");
   const divs = document.querySelectorAll("div#content > div");
   const numberOfProjects = divs.length;
   const createDiv = document.createElement("div");
   let projectTitle;
-  if (name === null) {
+  let projectName;
+  if (obj === null) {
     projectTitle = window.prompt("Project Name:");
+    projectName = "project" + numberOfProjects;
     if (projectTitle === (null || "")) {
       return;
     }
+  } else if (obj === "default") {
+    projectTitle = "Default";
+    projectName = obj;
   } else {
-    projectTitle = name;
+    projectTitle = obj.name;
+    projectName = obj.name;
   }
-  const projectName = "project" + numberOfProjects;
-  const createNewProject = projectCollection(projectTitle, projectName);
+
+  const createNewProject = createProject.projectCollection(
+    projectTitle,
+    projectName
+  );
   const divTitle = document.createElement("h2");
   divTitle.textContent = createNewProject.title;
-  createDiv.setAttribute("id", "project" + numberOfProjects);
+  createDiv.setAttribute("id", projectName);
   createDiv.setAttribute("class", "projectDiv");
   divContent.appendChild(createDiv);
   createDiv.appendChild(divTitle);
-  const currentDiv = document.getElementById("project" + numberOfProjects);
+  const currentDiv = document.getElementById(projectName);
   addItemButton(currentDiv);
 
   const removeProjectButton = document.createElement("button");
   removeProjectButton.setAttribute("class", "removeProject");
-  removeProjectButton.textContent = "Remove Project";
+  removeProjectButton.innerHTML = '<i class="las la-trash"></i>';
   removeProjectButton.addEventListener("click", function () {
-    removeProject("project" + numberOfProjects);
+    removeProject(projectName);
   });
 
   createDiv.appendChild(removeProjectButton);
@@ -66,7 +68,7 @@ function addItemButton(currentDiv) {
   const buttonname = "button" + currentDiv.id;
   createbutton.setAttribute("id", buttonname);
   createbutton.setAttribute("name", currentDiv.id);
-  createbutton.textContent = "Add Item";
+  createbutton.innerHTML = '<i class="las la-plus-square"></i>';
   currentDiv.appendChild(createbutton);
   currentDiv.appendChild(formDiv);
   createbutton.addEventListener("click", function () {
@@ -106,7 +108,7 @@ function formHandler(currentDiv) {
       currentProject,
       itemDivExisting
     );
-
+    createProject.addItemToProject(currentProject, newitem);
     addItemToDom(newitem, currentDiv);
     removeItemButton(newitem);
     editItemButton(newitem);
@@ -129,18 +131,19 @@ function formHandlerEdit(currentDiv) {
     let currentItem;
     for (let i = 0; i < currentItemList.length; i++) {
       currentItem = currentItemList[i];
-      console.log(currentItem.itemID);
-      console.log(currentDiv.id);
       if (currentItem.itemID === currentDiv.id) {
         break;
       }
     }
+    createProject.removeItemFromProject(currentItem.project, currentItem);
     currentItem.title = itemInfo[0];
     currentItem.description = itemInfo[1];
     currentItem.dueDate = itemInfo[2];
     currentItem.priority = itemInfo[3];
     currentItem.notes = itemInfo[4];
     currentItem.checkList = itemInfo[5];
+    createProject.addItemToProject(currentItem.project, currentItem);
+    // falta alterar os items dos projectos em storage
 
     const storedItems = window.localStorage;
     const currentItemID = currentItem.itemID;
@@ -160,10 +163,11 @@ function removeItemButton(item) {
   const currentItem = document.getElementById(item.itemID);
   const removeItemBut = document.createElement("button");
   removeItemBut.setAttribute("class", "removeItem");
-  removeItemBut.textContent = "Remove Item";
+  removeItemBut.innerHTML = '<i class="las la-trash"></i>';
   removeItemBut.addEventListener("click", function () {
     currentItem.remove();
     createList.removeItemFromList(item);
+    createProject.removeItemFromProject(item.project, item);
     storedItems.removeItem(item.itemID);
   });
   currentItem.appendChild(removeItemBut);
@@ -171,10 +175,8 @@ function removeItemButton(item) {
 
 function addItemToDom(item, currentDiv) {
   const div = document.createElement("div");
-  //const itemDivExisting = currentDiv.querySelectorAll("div.itemDiv").length;
   div.setAttribute("class", "itemDiv");
   div.setAttribute("id", item.itemID);
-  //div.setAttribute("id", item.project + "item" + itemDivExisting);
   const itemTitleDiv = document.createElement("div");
   itemTitleDiv.setAttribute("class", "itemTitle");
 
@@ -203,7 +205,7 @@ function addItemToDom(item, currentDiv) {
   const itemPriority = document.createElement("p");
   const itemNotes = document.createElement("p");
   let itemCheckList;
-  if (item.checkList.trimEnd() !== "") {
+  if (item.checkList !== undefined && item.checkList.trimEnd() !== "") {
     itemCheckList = makeListFromInput(item.checkList);
   } else {
     itemCheckList = document.createElement("p");
@@ -449,24 +451,17 @@ function retrieveItemsFromStorage() {
     for (let i = 0; i < storedItems.length; i++) {
       const jsonString = storedItems.getItem(storedItems.key(i));
       const obj = JSON.parse(jsonString);
-      const objProject = obj.project;
-      if (objProject === "default") {
-        const defaultDiv = document.getElementById("default");
-        addItemToDom(obj, defaultDiv);
-        createList.updateItemList(null, "add", obj);
-        if (obj.done) {
-          styleItem(obj);
-        }
-        removeItemButton(obj);
-        editItemButton(obj);
+      if (obj.name !== undefined && obj.name !== "default") {
+        addProject(obj);
+      }
+    }
+    for (let j = 0; j < storedItems.length; j++) {
+      const jsonString = storedItems.getItem(storedItems.key(j));
+      const obj = JSON.parse(jsonString);
+      if (obj.name !== undefined && obj.name === "default") {
+        continue;
       } else {
-        let projectDiv = document.getElementById(obj.project);
-        if (projectDiv === null) {
-          addProject(obj.title);
-          projectDiv = document.getElementById(obj.project);
-          continue;
-        }
-
+        const projectDiv = document.getElementById(obj.project);
         addItemToDom(obj, projectDiv);
         createList.updateItemList(null, "add", obj);
         if (obj.done) {
@@ -486,7 +481,8 @@ function editItemButton(item) {
   const currentDiv = document.getElementById(item.itemID);
   const editItemBut = document.createElement("button");
   editItemBut.setAttribute("class", "editItem");
-  editItemBut.textContent = "Edit";
+  editItemBut.innerHTML = '<i class="las la-edit"></i>';
+  //editItemBut.textContent = "Edit";
   editItemBut.addEventListener("click", function () {
     const formExists = document.querySelector("form");
     if (formExists !== null) {
@@ -501,7 +497,6 @@ function editItemButton(item) {
 
 function editItem(item) {
   const currentDiv = document.getElementById(item.itemID);
-  console.log(currentDiv);
   const formDiv = document.querySelector(".formDiv");
   addItemForm(currentDiv, formDiv, "edit");
   const inputTitle = document.getElementById("title");
@@ -523,6 +518,7 @@ window.onload = retrieveItemsFromStorage;
 
 // organize todos by date
 //on click extend
+// se calhar devia deixar editar ou apagar o default
 
 function makeListFromInput(checkList) {
   const checkListString = checkList;
