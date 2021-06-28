@@ -1,0 +1,50 @@
+#content {
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+}
+
+button {
+  border: 1px black solid;
+  background-color: none;
+}
+
+.removeItem,
+.editItem,
+.removeProject {
+  height: 25px;
+  width: 25px;
+  padding: 0;
+  font-size: 20px;
+}
+
+.addItem {
+  height: 25px;
+  width: 100%;
+  font-size: 20px;
+}
+
+.projectDiv {
+  width: 300px;
+}
+
+.itemDiv {
+  /* max-height: 200px; */
+  border: 1px dotted grey;
+  width: 300px;
+}
+
+.statusSpan {
+  width: 10px;
+  height: 10px;
+  background-color: white;
+  border: solid 2px black;
+  padding: 0;
+  margin-left: 5px;
+}
+
+.statusSpanComplete {
+  width: 25px;
+  height: 25px;
+  border: none;
+}

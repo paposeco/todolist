@@ -40,9 +40,7 @@ const createProject = (function () {
     const storedItems = window.localStorage;
     const currentProjectJson = storedItems.getItem(project);
     const currentProject = JSON.parse(currentProjectJson);
-    console.log(currentProject);
     currentProject.items.push(item);
-    console.log(currentProject);
     const currentProjectBackToJson = JSON.stringify(currentProject);
     storedItems.setItem(project, currentProjectBackToJson);
   };
@@ -67,5 +65,16 @@ const createProject = (function () {
     projectsCreated.push(newProject);
     return newProject;
   };
-  return { removeItemFromProject, projectCollection, addItemToProject };
+
+  const updateProjectArray = function (array) {
+    projectsCreated = array;
+  };
+
+  return {
+    removeItemFromProject,
+    projectCollection,
+    addItemToProject,
+    projectsCreated,
+    updateProjectArray,
+  };
 })();
