@@ -73,9 +73,6 @@ const createList = (function () {
       false
     );
     itemList = updateItemList(itemList, "add", newItem);
-    // const itemStorageName = newItem.itemID;
-    // const itemForStorage = JSON.stringify(newItem);
-    // localStorage.setItem(itemStorageName, itemForStorage);
     return newItem;
   };
   const removeItemFromList = function (item) {
@@ -87,5 +84,5 @@ const createList = (function () {
       }
     }
   };
-  return { createNewItem, updateItemList, removeItemFromList };
+  return { createNewItem, updateItemList, removeItemFromList, itemList };
 })();

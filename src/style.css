@@ -1,12 +1,22 @@
+body {
+  padding: 0;
+  margin: 10px;
+  box-sizing: border-box;
+}
+
 #content {
   display: flex;
   flex-direction: row;
-  gap: 20px;
+  gap: 15px;
 }
 
 button {
   border: 1px black solid;
   background-color: none;
+}
+
+button:hover {
+  cursor: pointer;
 }
 
 .removeItem,
@@ -18,29 +28,47 @@ button {
   font-size: 20px;
 }
 
+#addnewproject {
+  padding: 10px 20px;
+}
+
 .addItem {
   height: 25px;
   width: 100%;
   font-size: 20px;
+  padding: 0;
 }
 
 .projectDiv {
   width: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border: 1px grey solid;
+  padding: 10px;
+  height: max-content;
+}
+
+.projectDiv > div {
+  padding: 5px;
 }
 
 .itemDiv {
-  /* max-height: 200px; */
   border: 1px dotted grey;
-  width: 300px;
+  max-width: 100%;
 }
 
 .statusSpan {
   width: 10px;
   height: 10px;
   background-color: white;
-  border: solid 2px black;
+  border: solid 1px black;
   padding: 0;
   margin-left: 5px;
+}
+
+.statusSpan:hover {
+  cursor: pointer;
 }
 
 .statusSpanComplete {
@@ -49,4 +77,17 @@ button {
   border: none;
   font-size: 18px;
   margin-left: 5px;
+}
+
+.projectHeader {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.itemFooter {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
 }
