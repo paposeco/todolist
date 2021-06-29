@@ -11,11 +11,8 @@ function manageDom() {
   const divAddProject = document.getElementById("addProject");
   divAddProject.appendChild(addProjectButton);
   const storedItems = window.localStorage;
-  if (storedItems.length !== 0) {
-    const defaultIsPresent = storedItems.getItem("default");
-    if (defaultIsPresent !== null) {
-      addProject("default");
-    }
+  if (storedItems.length === 0) {
+    addProject("default");
   }
 
   addProjectButton.addEventListener("click", function () {
@@ -25,7 +22,8 @@ function manageDom() {
 
 function addProject(obj) {
   const divContent = document.getElementById("content");
-  const divs = document.querySelectorAll("div#content > div");
+  const divs = document.querySelectorAll("div#content > div.projectDiv");
+  // no node, extrair todos os ids e ver qual é o maior. o proximo projecto é isso +1
   const numberOfProjects = divs.length - 1;
   const createDiv = document.createElement("div");
   let projectTitle;
@@ -38,7 +36,7 @@ function addProject(obj) {
     }
   } else if (obj === "default") {
     projectTitle = "Default";
-    projectName = obj;
+    projectName = "project0";
   } else {
     projectTitle = obj.name;
     projectName = obj.name;
@@ -75,8 +73,6 @@ function addItemButton(currentDiv) {
   createbutton.setAttribute("name", currentDiv.id);
   createbutton.setAttribute("class", "addItem");
   createbutton.innerHTML = '<i class="las la-plus-square"></i>';
-  // const lastchild = currentDiv.lastChild;
-  // lastchild.appendChild(createbutton);
   currentDiv.appendChild(createbutton);
   currentDiv.appendChild(formDiv);
   createbutton.addEventListener("click", function () {
@@ -157,14 +153,8 @@ function formHandlerEdit(currentDiv) {
     currentItem.priority = itemInfo[3];
     currentItem.notes = itemInfo[4];
     currentItem.checkList = itemInfo[5];
-    createProject.addItemToProject(currentItem.project, currentItem);
-    // falta alterar os items dos projectos em storage
 
-    const storedItems = window.localStorage;
-    const currentItemID = currentItem.itemID;
-    const itemForStorageUpdated = JSON.stringify(currentItem);
-    storedItems.setItem(currentItemID, itemForStorageUpdated);
-
+    createProject.editItemInProject(currentItem);
     addItemToDom(currentItem, currentDiv);
     removeItemButton(currentItem);
     editItemButton(currentItem);
@@ -417,15 +407,6 @@ function removeProject(divID) {
     }
   }
   const storedItems = window.localStorage;
-  for (let j = 0; j < currentItemList.length; j++) {
-    const currentItem = currentItemList[j];
-    const itemProject = currentItem.project;
-    const itemName = currentItem.name;
-    if (itemProject === divID) {
-      createList.removeItemFromList(currentItem);
-      storedItems.removeItem(currentItem.itemID);
-    }
-  }
   for (let k = 0; k < storedItems.length; k++) {
     const storedItemKey = storedItems.key(k);
     if (storedItemKey === divID) {
@@ -437,10 +418,7 @@ function removeProject(divID) {
 
 function markItemAsDone(item) {
   item.done = true;
-  const storedItems = window.localStorage;
-  const currentItemID = item.itemID;
-  const itemForStorageUpdated = JSON.stringify(item);
-  storedItems.setItem(currentItemID, itemForStorageUpdated);
+  createProject.editItemInProject(item);
   styleItem(item);
 
   const currentDiv = document.getElementById(item.itemID);
@@ -451,38 +429,42 @@ function markItemAsDone(item) {
 function styleItem(item) {
   const itemDiv = document.getElementById(item.itemID);
   const itemStatusDivP = itemDiv.querySelector(".itemStatus > p");
-  const itemStatusDivSpan = itemDiv.querySelector(".itemStatus > span");
+  const itemStatusDivSpan = document.createElement("span");
+  itemStatusDivSpan.setAttribute("class", "statusSpanComplete");
   itemStatusDivP.textContent = "Done!";
-  itemStatusDivSpan.style.width = "0px";
-  itemStatusDivSpan.style.height = "0px";
-  itemStatusDivSpan.style.display = "inline";
-  itemStatusDivSpan.style.backgroundColor = "none";
+  itemStatusDivSpan.style.display = "inline-block";
+  itemStatusDivSpan.innerHTML = '<i class="las la-check-square"></i>';
+  itemStatusDivP.appendChild(itemStatusDivSpan);
 }
 
 function retrieveItemsFromStorage() {
   const storedItems = window.localStorage;
   if (storedItems.length != 0) {
-    for (let i = 0; i < storedItems.length; i++) {
-      const jsonString = storedItems.getItem(storedItems.key(i));
-      const obj = JSON.parse(jsonString);
-      if (obj.name !== undefined && obj.name !== "default") {
-        addProject(obj);
-      }
-    }
+    let array = [];
     for (let j = 0; j < storedItems.length; j++) {
-      const jsonString = storedItems.getItem(storedItems.key(j));
+      let projectNumber = storedItems.key(j).replace("project", "");
+      array.push(projectNumber);
+    }
+    array.sort();
+    for (let i = 0; i < storedItems.length; i++) {
+      const jsonString = storedItems.getItem("project" + array[i]);
+      //      const jsonString = storedItems.getItem(storedItems.key(i));
       const obj = JSON.parse(jsonString);
-      if (obj.name !== undefined) {
+      if (obj.name === "project0" && obj.items.length === 0) {
         continue;
-      } else {
-        const projectDiv = document.getElementById(obj.project);
-        addItemToDom(obj, projectDiv);
-        createList.updateItemList(null, "add", obj);
-        if (obj.done) {
-          styleItem(obj);
+      }
+      addProject(obj);
+      const projectItems = obj.items;
+      const projectDiv = document.getElementById(obj.name);
+      for (let k = 0; k < projectItems.length; k++) {
+        const currentItem = projectItems[k];
+        addItemToDom(currentItem, projectDiv);
+        createList.updateItemList(null, "add", currentItem);
+        if (currentItem.done) {
+          styleItem(currentItem);
         }
-        removeItemButton(obj);
-        editItemButton(obj);
+        removeItemButton(currentItem);
+        editItemButton(currentItem);
         moveAddButton(projectDiv);
       }
     }
@@ -497,7 +479,6 @@ function editItemButton(item) {
   const editItemBut = document.createElement("button");
   editItemBut.setAttribute("class", "editItem");
   editItemBut.innerHTML = '<i class="las la-edit"></i>';
-  //editItemBut.textContent = "Edit";
   editItemBut.addEventListener("click", function () {
     const formExists = document.querySelector("form");
     if (formExists !== null) {
@@ -529,8 +510,6 @@ function editItem(item) {
   formHandlerEdit(currentDiv);
 }
 
-window.onload = retrieveItemsFromStorage;
-
 // organize todos by date
 //on click extend
 // depois de marcar como done nao funciona o storage
@@ -546,3 +525,5 @@ function makeListFromInput(checkList) {
   }
   return ul;
 }
+
+window.onload = retrieveItemsFromStorage;

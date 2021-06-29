@@ -60,6 +60,24 @@ const createProject = (function () {
       }
     }
   };
+
+  const editItemInProject = function (currentItem) {
+    const storedItems = window.localStorage;
+    let projectInStorage = storedItems.getItem(currentItem.project);
+    let projectInStorageParsed = JSON.parse(projectInStorage);
+    let projectItemsArray = projectInStorageParsed.items;
+    for (let i = 0; i < projectItemsArray.length; i++) {
+      const itemInArray = projectItemsArray[i];
+      if (itemInArray.itemID === currentItem.itemID) {
+        projectItemsArray.splice(i, 1, currentItem);
+        break;
+      }
+    }
+    projectInStorageParsed.items = projectItemsArray;
+    const prepareProjectForStorage = JSON.stringify(projectInStorageParsed);
+    storedItems.setItem(currentItem.project, prepareProjectForStorage);
+  };
+
   const projectCollection = function (title, name) {
     const newProject = createNewProject(title, name, []);
     projectsCreated.push(newProject);
@@ -76,5 +94,6 @@ const createProject = (function () {
     addItemToProject,
     projectsCreated,
     updateProjectArray,
+    editItemInProject,
   };
 })();

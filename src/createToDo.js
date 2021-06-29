@@ -39,7 +39,6 @@ const createList = (function () {
   let itemList = [];
   const updateItemList = function (newlist, addorremove, item) {
     if (addorremove === "add") {
-      //createProject.addItemToProject(item.project, item);
       itemList.push(item);
       return itemList;
     } else if (newlist === null && addorremove === null && item === null) {
@@ -73,11 +72,10 @@ const createList = (function () {
       itemNumberInProject,
       false
     );
-    //createProject.addItemToProject(project, newItem);
     itemList = updateItemList(itemList, "add", newItem);
-    const itemStorageName = newItem.itemID;
-    const itemForStorage = JSON.stringify(newItem);
-    localStorage.setItem(itemStorageName, itemForStorage);
+    // const itemStorageName = newItem.itemID;
+    // const itemForStorage = JSON.stringify(newItem);
+    // localStorage.setItem(itemStorageName, itemForStorage);
     return newItem;
   };
   const removeItemFromList = function (item) {
