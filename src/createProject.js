@@ -45,6 +45,10 @@ const createProject = (function () {
     storedItems.setItem(project, currentProjectBackToJson);
   };
   const removeItemFromProject = function (project, item) {
+    let storedItems = window.localStorage;
+    const currentProjectJson = storedItems.getItem(project);
+    let currentProjectStorage = JSON.parse(currentProjectJson);
+    let currentProjectItemArrayInStorage = currentProjectStorage.items;
     for (let i = 0; i < projectsCreated.length; i++) {
       const currentProject = projectsCreated[i];
       if (currentProject.name === project) {
@@ -53,12 +57,16 @@ const createProject = (function () {
         for (let j = 0; j < currentProjectItemArray.length; j++) {
           let currentItemID = currentProjectItemArray[j].itemID;
           if (currentItemID === itemToBeDeleted) {
+            currentProjectItemArrayInStorage.splice(j, 1);
             currentProjectItemArray.splice(j, 1);
             break;
           }
         }
       }
     }
+    currentProjectStorage.items = currentProjectItemArrayInStorage;
+    const jsonStringify = JSON.stringify(currentProjectStorage);
+    storedItems.setItem(project, jsonStringify);
   };
 
   const editItemInProject = function (currentItem) {

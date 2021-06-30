@@ -1,6 +1,9 @@
 import { createProject } from "./createProject.js";
 import { creationTime, createList } from "./createToDo.js";
-export { manageDom };
+import { onAddCheckForChangesOnInfo } from "./info.js";
+export { manageDom, addItemToDomSimplified };
+
+window.onload = retrieveItemsFromStorage();
 
 function manageDom() {
   const divContent = document.getElementById("content");
@@ -8,7 +11,7 @@ function manageDom() {
   addProjectButton.innerHTML =
     '<i class="las la-folder-plus"></i><span> New Project</span>';
   addProjectButton.setAttribute("id", "addnewproject");
-  const divAddProject = document.getElementById("addProject");
+  const divAddProject = document.getElementById("info");
   divAddProject.appendChild(addProjectButton);
   const storedItems = window.localStorage;
   if (storedItems.length === 0) {
@@ -119,7 +122,18 @@ function formHandler(currentDiv) {
       // console.log(pair[0] + ", " + pair[1]);
     }
     const currentProject = currentDiv.id;
-    const itemDivExisting = currentDiv.querySelectorAll("div.itemDiv").length;
+    const itemDivExisting = currentDiv.querySelectorAll("div.itemDiv");
+    let highestItemNumber;
+    if (itemDivExisting.length === 0) {
+      highestItemNumber = 0;
+    } else {
+      for (let i = 0; i < itemDivExisting.length; i++) {
+        const idcomplete = itemDivExisting[i].getAttribute("id");
+        const itemword = idcomplete.lastIndexOf("item");
+        const id = idcomplete.slice(itemword + 4);
+        highestItemNumber = Number(id) + 1;
+      }
+    }
     const newitem = createList.createNewItem(
       itemInfo[0],
       itemInfo[1],
@@ -128,13 +142,15 @@ function formHandler(currentDiv) {
       itemInfo[4],
       itemInfo[5],
       currentProject,
-      itemDivExisting
+      highestItemNumber
     );
     createProject.addItemToProject(currentProject, newitem);
-    addItemToDom(newitem, currentDiv);
+    addItemToDom(newitem, currentDiv, currentProject);
+    onAddCheckForChangesOnInfo(newitem);
     const itemFooter = document.createElement("div");
     itemFooter.setAttribute("class", "itemFooter");
-    currentDiv.appendChild(itemFooter);
+    const itemDiv = document.getElementById(newitem.itemID);
+    itemDiv.appendChild(itemFooter);
     removeItemButton(newitem, itemFooter);
     editItemButton(newitem, itemFooter);
     const currentForm = document.getElementById("form" + currentDiv.id);
@@ -172,8 +188,6 @@ function formHandlerEdit(currentDiv) {
     currentItem.notes = itemInfo[4];
     currentItem.checkList = itemInfo[5];
 
-    // edit item in list
-
     createProject.editItemInProject(currentItem);
     createList.updateItemList(null, "add", currentItem);
     addItemToDom(currentItem, currentDiv, currentItem.project);
@@ -190,6 +204,7 @@ function formHandlerEdit(currentDiv) {
 function removeItemButton(item, div) {
   const storedItems = window.localStorage;
   const removeItemBut = document.createElement("button");
+  const currentItem = document.getElementById(item.itemID);
   removeItemBut.setAttribute("class", "removeItem");
   removeItemBut.setAttribute("title", "Delete item");
   removeItemBut.innerHTML = '<i class="las la-trash"></i>';
@@ -197,7 +212,7 @@ function removeItemButton(item, div) {
     currentItem.remove();
     createList.removeItemFromList(item);
     createProject.removeItemFromProject(item.project, item);
-    storedItems.removeItem(item.itemID);
+    //    storedItems.removeItem(storedItems.key(item.itemID));
   });
   div.appendChild(removeItemBut);
 }
@@ -284,6 +299,76 @@ function addItemToDom(item, currentDiv, projectDiv) {
   itemStatusSpan.addEventListener("click", function () {
     markItemAsDone(item);
   });
+}
+
+function addItemToDomSimplified(item, currentDiv, type) {
+  let div = document.createElement("div");
+  div.setAttribute("class", "itemDiv");
+  div.setAttribute("id", type);
+  currentDiv.appendChild(div);
+  const itemTitleDiv = document.createElement("div");
+  itemTitleDiv.setAttribute("class", "itemTitle");
+  const itemStatusDiv = document.createElement("div");
+  itemStatusDiv.setAttribute("class", "itemStatus");
+
+  const itemDescriptionDiv = document.createElement("div");
+  itemDescriptionDiv.setAttribute("class", "itemDescription");
+  const itemDueDateDiv = document.createElement("div");
+  itemDueDateDiv.setAttribute("class", "itemDueDate");
+  const itemPriorityDiv = document.createElement("div");
+  itemPriorityDiv.setAttribute("class", "itemPriority");
+  const itemNotesDiv = document.createElement("div");
+  itemNotesDiv.setAttribute("class", "itemNotes");
+  const itemCheckListDiv = document.createElement("div");
+  itemCheckListDiv.setAttribute("class", "itemCheckList");
+
+  const itemTitle = document.createElement("h3");
+  const itemStatus = document.createElement("p");
+  const itemStatusSpan = document.createElement("span");
+  itemStatusSpan.setAttribute("class", "statusSpan");
+  const itemDescription = document.createElement("p");
+  const itemDueDate = document.createElement("p");
+  const itemPriority = document.createElement("p");
+  const itemNotes = document.createElement("p");
+  let itemCheckList;
+  if (item.checkList !== undefined && item.checkList.trimEnd() !== "") {
+    itemCheckList = makeListFromInput(item.checkList);
+  } else {
+    itemCheckList = document.createElement("p");
+    itemCheckList.textContent = item.checkList;
+  }
+
+  itemTitle.textContent = item.title;
+  if (item.description != "") {
+    itemDescription.textContent = "Description: " + item.description;
+  }
+  itemStatus.textContent = "Not Finished";
+  itemStatusSpan.style.display = "inline-block";
+
+  if (item.dueDate != "") {
+    itemDueDate.textContent = "Due: " + item.dueDate;
+  }
+  if (item.priority != "") {
+    itemPriority.textContent = "Priority: " + item.priority;
+  }
+  if (item.notes != "") {
+    itemNotes.textContent = "Notes: " + item.notes;
+  }
+  div.appendChild(itemTitleDiv);
+  itemTitleDiv.appendChild(itemTitle);
+  div.appendChild(itemStatusDiv);
+  itemStatusDiv.appendChild(itemStatus);
+  itemStatus.appendChild(itemStatusSpan);
+  div.appendChild(itemDescriptionDiv);
+  itemDescriptionDiv.appendChild(itemDescription);
+  div.appendChild(itemDueDateDiv);
+  itemDueDateDiv.appendChild(itemDueDate);
+  div.appendChild(itemPriorityDiv);
+  itemPriorityDiv.appendChild(itemPriority);
+  div.appendChild(itemNotesDiv);
+  itemNotesDiv.appendChild(itemNotes);
+  div.appendChild(itemCheckListDiv);
+  itemCheckListDiv.appendChild(itemCheckList);
 }
 
 function addItemForm(currentDiv, formDiv, neworedit) {
@@ -446,6 +531,19 @@ function markItemAsDone(item) {
   createProject.editItemInProject(item);
   styleItem(item);
 
+  const infoDivP = document.querySelector("infoPriority");
+  const infoDivD = document.querySelector("infoDate");
+  const infoDivPid = infoDivP.getAttribute("id");
+  const infoDivDid = infoDivP.getAttribute("id");
+  const infoDivPItemid = infoDivPid.slice(5);
+  if (infoDivPItemid === item.itemID) {
+    const currentitems = createList.updateItemList(null, null, null);
+    let currentitem;
+    for (let i = 0; i < currentitems.length; i++) {
+      currentitem;
+    }
+  }
+
   const currentDiv = document.getElementById(item.itemID);
   const editButton = currentDiv.querySelector(".editItem");
   editButton.remove();
@@ -473,11 +571,7 @@ function retrieveItemsFromStorage() {
     array.sort();
     for (let i = 0; i < storedItems.length; i++) {
       const jsonString = storedItems.getItem("project" + array[i]);
-      //      const jsonString = storedItems.getItem(storedItems.key(i));
       const obj = JSON.parse(jsonString);
-      if (obj.name === "project0" && obj.items.length === 0) {
-        continue;
-      }
       addProject(obj);
       const projectItems = obj.items;
       const projectDiv = document.getElementById(obj.name);
@@ -497,7 +591,6 @@ function retrieveItemsFromStorage() {
         moveAddButton(projectDiv);
       }
     }
-    highestPriorityOnLoad();
   }
 }
 
@@ -555,4 +648,5 @@ function makeListFromInput(checkList) {
   return ul;
 }
 
-window.onload = retrieveItemsFromStorage;
+// se remover os items do default, continua em storage mas nao aparece vazio na pagina
+//on remove item ou mark as finished, update info

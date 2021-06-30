@@ -49,8 +49,18 @@ button:hover {
   height: max-content;
 }
 
-.projectDiv > div {
-  padding: 5px;
+#info {
+  width: 250px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+  height: max-content;
+}
+
+.projectDiv > div,
+#info > div {
+  padding: 0px 10px 10px 10px;
 }
 
 .itemDiv {
@@ -84,6 +94,11 @@ button:hover {
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
+  padding-bottom: 0px !important;
+}
+
+.formDiv {
+  padding-bottom: 0px !important;
 }
 
 .itemFooter {
