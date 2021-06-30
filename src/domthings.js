@@ -1,6 +1,10 @@
 import { createProject } from "./createProject.js";
-import { creationTime, createList } from "./createToDo.js";
-import { onAddCheckForChangesOnInfo } from "./info.js";
+import {
+  creationTime,
+  createList,
+  removeAllItemsFromProject,
+} from "./createToDo.js";
+import { onAddCheckForChangesOnInfo, changeItemOnInfo } from "./info.js";
 export { manageDom, addItemToDomSimplified };
 
 window.onload = retrieveItemsFromStorage();
@@ -41,7 +45,7 @@ function addProject(obj) {
   if (obj === null) {
     projectTitle = window.prompt("Project Name:");
     projectName = "project" + numberOfProjects;
-    if (projectTitle === (null || "")) {
+    if (projectTitle === null || projectTitle === "") {
       return;
     }
   } else if (obj === "default") {
@@ -188,9 +192,10 @@ function formHandlerEdit(currentDiv) {
     currentItem.notes = itemInfo[4];
     currentItem.checkList = itemInfo[5];
 
-    createProject.editItemInProject(currentItem);
+    createProject.addItemToProject(currentItem.project, currentItem);
     createList.updateItemList(null, "add", currentItem);
     addItemToDom(currentItem, currentDiv, currentItem.project);
+    onAddCheckForChangesOnInfo(currentItem);
     const itemFooter = document.createElement("div");
     itemFooter.setAttribute("class", "itemFooter");
     currentDiv.appendChild(itemFooter);
@@ -387,7 +392,6 @@ function addItemForm(currentDiv, formDiv, neworedit) {
   input1.setAttribute("type", "text");
   input1.setAttribute("name", "title");
   input1.setAttribute("id", "title");
-
   input1.required = true;
   div1.appendChild(label1);
   div1.appendChild(input1);
@@ -516,6 +520,9 @@ function removeProject(divID) {
       break;
     }
   }
+  console.log(createList.updateItemList(null, null, null));
+  createList.removeAllItemsFromProject(divID);
+  console.log(createList.updateItemList(null, null, null));
   const storedItems = window.localStorage;
   for (let k = 0; k < storedItems.length; k++) {
     const storedItemKey = storedItems.key(k);
@@ -527,22 +534,40 @@ function removeProject(divID) {
 }
 
 function markItemAsDone(item) {
+  createList.removeItemFromList(item);
+
   item.done = true;
+  createList.updateItemList(null, "add", item);
   createProject.editItemInProject(item);
   styleItem(item);
 
-  const infoDivP = document.querySelector("infoPriority");
-  const infoDivD = document.querySelector("infoDate");
-  const infoDivPid = infoDivP.getAttribute("id");
-  const infoDivDid = infoDivP.getAttribute("id");
-  const infoDivPItemid = infoDivPid.slice(5);
-  if (infoDivPItemid === item.itemID) {
-    const currentitems = createList.updateItemList(null, null, null);
-    let currentitem;
-    for (let i = 0; i < currentitems.length; i++) {
-      currentitem;
+  const infoDivP = document.querySelector(".infoPriority");
+  const infoDivD = document.querySelector(".infoDate");
+  if (infoDivP !== null) {
+    const infoDivPid = infoDivP.getAttribute("id");
+    const infoDivPItemid = infoDivPid.slice(5);
+    if (infoDivPItemid === item.itemID) {
+      infoDivP.remove();
+      changeItemOnInfo("priority");
     }
   }
+  if (infoDivD !== null) {
+    const infoDivDid = infoDivD.getAttribute("id");
+    const infoDivDItemid = infoDivDid.slice(5);
+    console.log(infoDivDItemid);
+    console.log(item.itemID);
+    if (infoDivDItemid === item.itemID) {
+      console.log("sim");
+      infoDivD.remove();
+      changeItemOnInfo("duedate");
+    }
+  }
+
+  // if (infoDivPItemid === item.itemID) {
+  //   createList.removeItemFromList(item);
+  //   createList.updateItemList(null, "add", item);
+  //   console.log()
+  //}
 
   const currentDiv = document.getElementById(item.itemID);
   const editButton = currentDiv.querySelector(".editItem");
@@ -648,5 +673,5 @@ function makeListFromInput(checkList) {
   return ul;
 }
 
-// se remover os items do default, continua em storage mas nao aparece vazio na pagina
-//on remove item ou mark as finished, update info
+// on delete project ou delete item, remove items from info
+// passasse algo de errado com o numero dos items - depois de editar a ultima div nao é o item com o numero maior e depois repete; ou tento por sempre como estava quando edito e depois a numeraçao das divs fica bem ou entao tento fazer sort do array ou do que quer que seja que esta a ir buscar o numero

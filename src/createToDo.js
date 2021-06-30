@@ -72,7 +72,7 @@ const createList = (function () {
       itemNumberInProject,
       false
     );
-    itemList = updateItemList(itemList, "add", newItem);
+    updateItemList(itemList, "add", newItem);
     return newItem;
   };
   const removeItemFromList = function (item) {
@@ -84,5 +84,21 @@ const createList = (function () {
       }
     }
   };
-  return { createNewItem, updateItemList, removeItemFromList, itemList };
+
+  const removeAllItemsFromProject = function (project) {
+    const currentitems = itemList;
+    for (let i = 0; i < currentitems.length; i++) {
+      const item = currentitems[i];
+      if (item.project === project) {
+        removeItemFromList(item);
+      }
+    }
+  };
+  return {
+    createNewItem,
+    updateItemList,
+    removeItemFromList,
+    itemList,
+    removeAllItemsFromProject,
+  };
 })();

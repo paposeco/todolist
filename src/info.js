@@ -1,7 +1,7 @@
 import { createList } from "./createToDo.js";
 import { addItemToDomSimplified } from "./domthings.js";
 import { compareAsc, parseISO } from "date-fns";
-export { checkInfoFromStorage, onAddCheckForChangesOnInfo };
+export { checkInfoFromStorage, onAddCheckForChangesOnInfo, changeItemOnInfo };
 
 // vazio se nao houver nada e se forem todas iguais a 1 nao mostrar nada
 function highestPriority(items, objH) {
@@ -32,9 +32,9 @@ function highestPriority(items, objH) {
 function highestPrioritySingle(item, objH) {
   let objHighest;
   if (objH !== undefined) {
-    objHighest = objH.priority;
+    objHighest = objH;
   }
-  if (item.priority > objHighest) {
+  if (item.priority > objHighest.priority) {
     return item;
   } else {
     return objHighest;
@@ -99,7 +99,6 @@ function onAddCheckForChangesOnInfo(item) {
         const currentitem = currentItemList[i];
         if (currentitem.itemID === objID) {
           highestpriorityobj = highestPrioritySingle(item, currentitem);
-          console.log(highestpriorityobj);
           break;
         }
       }
@@ -107,7 +106,9 @@ function onAddCheckForChangesOnInfo(item) {
     }
   }
   if (objDate === null) {
-    addInfoToDom(item, "duedate");
+    if (item.dueDate !== "") {
+      addInfoToDom(item, "duedate");
+    }
   } else {
     const objInfoDateID = objDate.getAttribute("id");
     const objID = objInfoDateID.replace("infoD", "");
@@ -117,11 +118,34 @@ function onAddCheckForChangesOnInfo(item) {
       const currentitem = currentItemList[i];
       if (currentitem.itemID === objID) {
         nearestduedateobj = closestDueDateSingle(item, currentitem);
-        console.log(nearestduedateobj);
         break;
       }
     }
     addInfoToDom(nearestduedateobj, "duedate");
+  }
+}
+
+function changeItemOnInfo(type) {
+  if (type === "priority") {
+    let objPriority;
+    const currentitems = createList.updateItemList(null, null, null);
+    for (let i = 0; i < currentitems.length; i++) {
+      const obj = currentitems[i];
+      objPriority = highestPriority(currentitems, objPriority);
+    }
+    if (objPriority !== undefined && objPriority.priority !== "1") {
+      addInfoToDom(objPriority, "priority");
+    }
+  } else {
+    let objDueDate;
+    const currentitems = createList.updateItemList(null, null, null);
+    for (let i = 0; i < currentitems.length; i++) {
+      const obj = currentitems[i];
+      objDueDate = closestDueDate(currentitems, objDueDate);
+    }
+    if (objDueDate !== undefined && objDueDate.dueDate !== "") {
+      addInfoToDom(objDueDate, "duedate");
+    }
   }
 }
 
@@ -167,7 +191,11 @@ function addInfoToDom(item, type) {
     infoPriority.setAttribute("id", "infoP" + item.itemID);
     const title = document.createElement("h3");
     title.textContent = "Highest priority task:";
-    infoDiv.appendChild(infoPriority);
+    if (infoDiv.hasChildNodes()) {
+      infoDiv.insertBefore(infoPriority, infoDate);
+    } else {
+      infoDiv.appendChild(infoPriority);
+    }
     infoPriority.appendChild(title);
     addItemToDomSimplified(item, infoPriority, "highestPriority");
   } else {
