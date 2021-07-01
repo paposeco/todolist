@@ -372,7 +372,14 @@ function createDomElements(item, div, projectID) {
   itemCheckListDiv.appendChild(itemCheckList);
 }
 
-function countTask(ul) {}
+function countTask(item) {
+  const fullchecklist = item.checkList;
+  const checklistarray = fullchecklist.split(";");
+  const numberItems = checklistarray.length;
+  return numberItems;
+  // tenho de pegar na checklist e transformar num objecto
+  // ou entao fazer logo isso quando crio o objecto. transformo logo a string num array, mas cada task item tem de ter um id
+}
 
 function addItemForm(projectDiv, neworedit) {
   const formDiv = document.createElement("div");
