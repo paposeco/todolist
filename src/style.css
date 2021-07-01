@@ -28,6 +28,17 @@ button:hover {
   font-size: 20px;
 }
 
+.removeProject,
+.sortProject {
+  border: none;
+}
+
+.sortProject {
+  height: 25px;
+  padding: 0;
+  padding-right: 2px;
+}
+
 #addnewproject {
   padding: 10px 20px;
 }
@@ -95,7 +106,12 @@ button:hover {
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
+  gap: 2px;
   padding-bottom: 0px !important;
+}
+
+.projectHeader > h2 {
+  flex-grow: 1;
 }
 
 .formDiv {
@@ -106,4 +122,55 @@ button:hover {
   display: flex;
   flex-direction: row;
   justify-content: flex-end;
+}
+
+.itemHeader {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+label[for="checkList"]:after {
+  content: "Separate list items with ';'";
+  font-size: 12px;
+}
+
+ul {
+  padding-left: 0;
+}
+
+ul li {
+  list-style: none;
+}
+
+li:before {
+  font-family: "Line Awesome Free";
+  /* content: "\F35A"; */
+  content: "\F04D";
+  color: black;
+  font-weight: 900;
+  padding-left: 15px;
+  padding-right: 10px;
+}
+
+.priority5 i {
+  border-radius: 25px;
+  background-color: #ffccbc;
+}
+
+.priority3 i,
+.priority4 i {
+  border-radius: 25px;
+  background-color: #fff9c4;
+}
+
+.priority1 i,
+.priority2 i {
+  border-radius: 25px;
+  background-color: #dcedc8;
+}
+
+.itemCheckList p {
+  margin-bottom: 5px;
 }

@@ -49,6 +49,14 @@ const createList = (function () {
     }
   };
 
+  const retrieveItem = function (itemID) {
+    for (let i = 0; i < itemList.length; i++) {
+      if (itemList[i].itemID === itemID) {
+        return itemList[i];
+      }
+    }
+  };
+
   const createNewItem = function (
     title,
     description,
@@ -100,5 +108,6 @@ const createList = (function () {
     removeItemFromList,
     itemList,
     removeAllItemsFromProject,
+    retrieveItem,
   };
 })();

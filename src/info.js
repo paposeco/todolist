@@ -3,7 +3,6 @@ import { addItemToDomSimplified } from "./domthings.js";
 import { compareAsc, parseISO } from "date-fns";
 export { checkInfoFromStorage, onAddCheckForChangesOnInfo, changeItemOnInfo };
 
-// vazio se nao houver nada e se forem todas iguais a 1 nao mostrar nada
 function highestPriority(items, objH) {
   let objHighest;
   if (objH !== undefined) {

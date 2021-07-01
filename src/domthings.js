@@ -5,7 +5,8 @@ import {
   removeAllItemsFromProject,
 } from "./createToDo.js";
 import { onAddCheckForChangesOnInfo, changeItemOnInfo } from "./info.js";
-export { manageDom, addItemToDomSimplified };
+import { orderTasksP, orderTasksD } from "./index.js";
+export { manageDom, addItemToDomSimplified, addItemToDom, styleItem };
 
 window.onload = retrieveItemsFromStorage();
 
@@ -80,6 +81,23 @@ function addProject(obj) {
     removeProject(projectName);
   });
   projectHeader.appendChild(removeProjectButton);
+
+  const projectSortButtonP = document.createElement("button");
+  projectSortButtonP.setAttribute("class", "sortProject");
+  projectSortButtonP.setAttribute("title", "Sort by priority");
+  projectSortButtonP.innerHTML = '<i class="las la-sort"></i><span>P</span>';
+  projectSortButtonP.addEventListener("click", function () {
+    orderTasksP(projectName);
+  });
+  projectHeader.appendChild(projectSortButtonP);
+  const projectSortButtonD = document.createElement("button");
+  projectSortButtonD.setAttribute("class", "sortProject");
+  projectSortButtonD.setAttribute("title", "Sort by due date");
+  projectSortButtonD.innerHTML = '<i class="las la-sort"></i><span>D</span>';
+  projectSortButtonD.addEventListener("click", function () {
+    orderTasksD(projectName);
+  });
+  projectHeader.appendChild(projectSortButtonD);
 }
 
 function addItemButton(projectDiv) {
@@ -102,6 +120,9 @@ function addItemButton(projectDiv) {
 }
 
 function moveAddButton(div) {
+  if (div.getAttribute("class") === "itemDiv") {
+    return;
+  }
   const button = div.querySelector(".addItem");
   div.removeChild(button);
   div.appendChild(button);
@@ -154,15 +175,8 @@ function formHandler(projectDiv) {
     createProject.addItemToProject(currentProject, newitem);
     addItemToDom(newitem, projectDiv, currentProject);
     onAddCheckForChangesOnInfo(newitem);
-    const itemFooter = document.createElement("div");
-    itemFooter.setAttribute("class", "itemFooter");
-    const itemDiv = document.getElementById(newitem.itemID);
-    itemDiv.appendChild(itemFooter);
-    removeItemButton(newitem, itemFooter);
-    editItemButton(newitem, itemFooter, projectDiv);
     const currentForm = document.querySelector(".formDiv");
     currentForm.remove();
-    moveAddButton(projectDiv);
   });
 }
 
@@ -174,7 +188,6 @@ function formHandlerEdit(currentDiv) {
     let itemInfo = [];
     for (const pair of formData.entries()) {
       itemInfo.push(pair[1]);
-      // console.log(pair[0] + ", " + pair[1]);
     }
     const currentItemList = createList.updateItemList(null, null, null);
     let currentItem;
@@ -199,17 +212,10 @@ function formHandlerEdit(currentDiv) {
     createList.updateItemList(null, "add", currentItem);
     addItemToDom(currentItem, currentDiv, currentItem.project);
     onAddCheckForChangesOnInfo(currentItem);
-    const itemFooter = document.createElement("div");
-    itemFooter.setAttribute("class", "itemFooter");
-    currentDiv.appendChild(itemFooter);
-    removeItemButton(currentItem, itemFooter);
-    editItemButton(currentItem, itemFooter, currentDiv);
     const currentForm = document.querySelector(".formDiv");
     if (currentForm !== null) {
       currentForm.remove();
     }
-    const nodeProjectDiv = document.getElementById(currentItem.project);
-    moveAddButton(nodeProjectDiv);
   });
 }
 
@@ -226,7 +232,6 @@ function removeItemButton(item, div) {
     createProject.removeItemFromProject(item.project, item);
     changeItemOnInfo("priority");
     changeItemOnInfo("duedate");
-    //    storedItems.removeItem(storedItems.key(item.itemID));
   });
   div.appendChild(removeItemBut);
 }
@@ -241,75 +246,19 @@ function addItemToDom(item, projectDiv, projectID) {
     div.setAttribute("id", item.itemID);
     projectDiv.appendChild(div);
   }
-  const itemTitleDiv = document.createElement("div");
-  itemTitleDiv.setAttribute("class", "itemTitle");
-
-  const itemStatusDiv = document.createElement("div");
-  itemStatusDiv.setAttribute("class", "itemStatus");
-
-  const itemDescriptionDiv = document.createElement("div");
-  itemDescriptionDiv.setAttribute("class", "itemDescription");
-  const itemDueDateDiv = document.createElement("div");
-  itemDueDateDiv.setAttribute("class", "itemDueDate");
-  const itemPriorityDiv = document.createElement("div");
-  itemPriorityDiv.setAttribute("class", "itemPriority");
-  const itemNotesDiv = document.createElement("div");
-  itemNotesDiv.setAttribute("class", "itemNotes");
-  const itemCheckListDiv = document.createElement("div");
-  itemCheckListDiv.setAttribute("class", "itemCheckList");
-
-  const itemTitle = document.createElement("h3");
-  const itemStatus = document.createElement("p");
-  const itemStatusSpan = document.createElement("span");
-  itemStatusSpan.setAttribute("class", "statusSpan");
-  const itemDescription = document.createElement("p");
-  const itemDueDate = document.createElement("p");
-  const itemPriority = document.createElement("p");
-  const itemNotes = document.createElement("p");
-  let itemCheckList;
-  if (item.checkList !== undefined && item.checkList.trimEnd() !== "") {
-    itemCheckList = makeListFromInput(item.checkList);
-  } else {
-    itemCheckList = document.createElement("p");
-    itemCheckList.textContent = item.checkList;
-  }
-
-  itemTitle.textContent = item.title;
-  if (item.description != "") {
-    itemDescription.textContent = "Description: " + item.description;
-  }
-  itemStatus.textContent = "Not Finished";
-  itemStatusSpan.style.display = "inline-block";
-
-  if (item.dueDate != "") {
-    itemDueDate.textContent = "Due: " + item.dueDate;
-  }
-  if (item.priority != "") {
-    itemPriority.textContent = "Priority: " + item.priority;
-  }
-  if (item.notes != "") {
-    itemNotes.textContent = "Notes: " + item.notes;
-  }
-
-  div.appendChild(itemTitleDiv);
-  itemTitleDiv.appendChild(itemTitle);
-  div.appendChild(itemStatusDiv);
-  itemStatusDiv.appendChild(itemStatus);
-  itemStatus.appendChild(itemStatusSpan);
-  div.appendChild(itemDescriptionDiv);
-  itemDescriptionDiv.appendChild(itemDescription);
-  div.appendChild(itemDueDateDiv);
-  itemDueDateDiv.appendChild(itemDueDate);
-  div.appendChild(itemPriorityDiv);
-  itemPriorityDiv.appendChild(itemPriority);
-  div.appendChild(itemNotesDiv);
-  itemNotesDiv.appendChild(itemNotes);
-  div.appendChild(itemCheckListDiv);
-  itemCheckListDiv.appendChild(itemCheckList);
-
+  createDomElements(item, div, projectID);
+  const itemStatusSpan = div.querySelector(".statusSpan");
   itemStatusSpan.addEventListener("click", function () {
     markItemAsDone(item);
   });
+
+  const itemFooter = document.createElement("div");
+  itemFooter.setAttribute("class", "itemFooter");
+  const itemDiv = document.getElementById(item.itemID);
+  itemDiv.appendChild(itemFooter);
+  removeItemButton(item, itemFooter);
+  editItemButton(item, itemFooter, projectDiv);
+  moveAddButton(projectDiv);
 }
 
 function addItemToDomSimplified(item, currentDiv, type) {
@@ -317,21 +266,45 @@ function addItemToDomSimplified(item, currentDiv, type) {
   div.setAttribute("class", "itemDiv");
   div.setAttribute("id", type);
   currentDiv.appendChild(div);
-  const itemTitleDiv = document.createElement("div");
-  itemTitleDiv.setAttribute("class", "itemTitle");
-  const itemStatusDiv = document.createElement("div");
-  itemStatusDiv.setAttribute("class", "itemStatus");
+  createDomElements(item, div);
+}
 
+function createDomElements(item, div, projectID) {
+  const itemHeaderDiv = document.createElement("div");
+  const itemTitleDiv = document.createElement("div");
+  const itemStatusDiv = document.createElement("div");
   const itemDescriptionDiv = document.createElement("div");
-  itemDescriptionDiv.setAttribute("class", "itemDescription");
   const itemDueDateDiv = document.createElement("div");
-  itemDueDateDiv.setAttribute("class", "itemDueDate");
   const itemPriorityDiv = document.createElement("div");
-  itemPriorityDiv.setAttribute("class", "itemPriority");
   const itemNotesDiv = document.createElement("div");
-  itemNotesDiv.setAttribute("class", "itemNotes");
   const itemCheckListDiv = document.createElement("div");
-  itemCheckListDiv.setAttribute("class", "itemCheckList");
+
+  const divs = [
+    itemHeaderDiv,
+    itemTitleDiv,
+    itemStatusDiv,
+    itemDescriptionDiv,
+    itemDueDateDiv,
+    itemPriorityDiv,
+    itemNotesDiv,
+    itemCheckListDiv,
+  ];
+  const classes = [
+    "itemHeader",
+    "itemTitle",
+    "itemStatus",
+    "itemDescription",
+    "itemDueDate",
+    "itemPriority",
+    "itemNotes",
+    "itemCheckList",
+  ];
+
+  for (let i = 0; i < divs.length; i++) {
+    divs[i].setAttribute("class", classes[i]);
+  }
+
+  itemPriorityDiv.setAttribute("title", "Priority");
 
   const itemTitle = document.createElement("h3");
   const itemStatus = document.createElement("p");
@@ -344,6 +317,9 @@ function addItemToDomSimplified(item, currentDiv, type) {
   let itemCheckList;
   if (item.checkList !== undefined && item.checkList.trimEnd() !== "") {
     itemCheckList = makeListFromInput(item.checkList);
+    const itemCheckListTitle = document.createElement("p");
+    itemCheckListTitle.innerHTML = '<i class="las la-tasks"></i> Tasks:';
+    itemCheckListDiv.appendChild(itemCheckListTitle);
   } else {
     itemCheckList = document.createElement("p");
     itemCheckList.textContent = item.checkList;
@@ -360,27 +336,43 @@ function addItemToDomSimplified(item, currentDiv, type) {
     itemDueDate.textContent = "Due: " + item.dueDate;
   }
   if (item.priority != "") {
-    itemPriority.textContent = "Priority: " + item.priority;
+    itemPriority.innerHTML =
+      '<i class="las la-exclamation"></i>' + item.priority;
   }
+  itemPriorityDiv.classList.add("priority" + item.priority);
   if (item.notes != "") {
     itemNotes.textContent = "Notes: " + item.notes;
   }
-  div.appendChild(itemTitleDiv);
+
+  const divChildren = [
+    itemHeaderDiv,
+    itemStatusDiv,
+    itemDescriptionDiv,
+    itemNotesDiv,
+    itemDueDateDiv,
+    itemCheckListDiv,
+  ];
+  for (let j = 0; j < divChildren.length; j++) {
+    div.appendChild(divChildren[j]);
+  }
+
+  itemHeaderDiv.appendChild(itemTitleDiv);
+  itemHeaderDiv.appendChild(itemPriorityDiv);
+
   itemTitleDiv.appendChild(itemTitle);
-  div.appendChild(itemStatusDiv);
+  itemPriorityDiv.appendChild(itemPriority);
+
   itemStatusDiv.appendChild(itemStatus);
   itemStatus.appendChild(itemStatusSpan);
-  div.appendChild(itemDescriptionDiv);
+
   itemDescriptionDiv.appendChild(itemDescription);
-  div.appendChild(itemDueDateDiv);
   itemDueDateDiv.appendChild(itemDueDate);
-  div.appendChild(itemPriorityDiv);
-  itemPriorityDiv.appendChild(itemPriority);
-  div.appendChild(itemNotesDiv);
   itemNotesDiv.appendChild(itemNotes);
-  div.appendChild(itemCheckListDiv);
+
   itemCheckListDiv.appendChild(itemCheckList);
 }
+
+function countTask(ul) {}
 
 function addItemForm(projectDiv, neworedit) {
   const formDiv = document.createElement("div");
@@ -401,8 +393,6 @@ function addItemForm(projectDiv, neworedit) {
   input1.setAttribute("name", "title");
   input1.setAttribute("id", "title");
   input1.required = true;
-  div1.appendChild(label1);
-  div1.appendChild(input1);
 
   const div2 = document.createElement("div");
   div2.setAttribute("class", "formNewItem");
@@ -413,8 +403,6 @@ function addItemForm(projectDiv, neworedit) {
   input2.setAttribute("type", "text");
   input2.setAttribute("name", "description");
   input2.setAttribute("id", "description");
-  div2.appendChild(label2);
-  div2.appendChild(input2);
 
   const currentTime = creationTime();
   const div3 = document.createElement("div");
@@ -428,8 +416,6 @@ function addItemForm(projectDiv, neworedit) {
   input3.setAttribute("id", "dueDate");
   input3.setAttribute("value", "YYYY-MM-DD");
   input3.setAttribute("min", currentTime);
-  div3.appendChild(label3);
-  div3.appendChild(input3);
 
   const div4 = document.createElement("div");
   div4.setAttribute("class", "formNewItem");
@@ -447,9 +433,6 @@ function addItemForm(projectDiv, neworedit) {
     input4.appendChild(newSelectOption);
   }
 
-  div4.appendChild(label4);
-  div4.appendChild(input4);
-
   const div5 = document.createElement("div");
   div5.setAttribute("class", "formNewItem");
   const label5 = document.createElement("label");
@@ -459,11 +442,10 @@ function addItemForm(projectDiv, neworedit) {
   input5.setAttribute("type", "text");
   input5.setAttribute("name", "notes");
   input5.setAttribute("id", "notes");
-  div5.appendChild(label5);
-  div5.appendChild(input5);
 
   const div6 = document.createElement("div");
   div6.setAttribute("class", "formNewItem");
+  div6.setAttribute("title", "Separate items with ';'");
   const label6 = document.createElement("label");
   label6.setAttribute("for", "checkList");
   label6.textContent = "Check List: ";
@@ -471,20 +453,20 @@ function addItemForm(projectDiv, neworedit) {
   input6.setAttribute("type", "text");
   input6.setAttribute("name", "checkList");
   input6.setAttribute("id", "checkList");
-  div6.appendChild(label6);
-  div6.appendChild(input6);
 
-  const div7 = document.createElement("div");
-  const div8 = document.createElement("div");
+  const divs = [div1, div2, div3, div4, div5, div6];
+  const inputs = [input1, input2, input3, input4, input5, input6];
+  const labels = [label1, label2, label3, label4, label5, label6];
+  divs.forEach(function (div, index) {
+    div.appendChild(labels[index]);
+    div.appendChild(inputs[index]);
+    form.appendChild(div);
+  });
 
   projectDiv.appendChild(formDiv);
   formDiv.appendChild(form);
-  form.appendChild(div1);
-  form.appendChild(div2);
-  form.appendChild(div3);
-  form.appendChild(div4);
-  form.appendChild(div5);
-  form.appendChild(div6);
+  const div7 = document.createElement("div");
+  const div8 = document.createElement("div");
 
   if (neworedit === "new") {
     div7.setAttribute("class", "formNewItem");
@@ -528,7 +510,6 @@ function removeProject(divID) {
       break;
     }
   }
-  console.log(createList.updateItemList(null, null, null));
   createList.removeAllItemsFromProject(divID);
   changeItemOnInfo("priority");
   changeItemOnInfo("duedate");
@@ -544,12 +525,10 @@ function removeProject(divID) {
 
 function markItemAsDone(item) {
   createList.removeItemFromList(item);
-
   item.done = true;
   createList.updateItemList(null, "add", item);
   createProject.editItemInProject(item);
   styleItem(item);
-
   const infoDivP = document.querySelector(".infoPriority");
   const infoDivD = document.querySelector(".infoDate");
   if (infoDivP !== null) {
@@ -563,8 +542,6 @@ function markItemAsDone(item) {
   if (infoDivD !== null) {
     const infoDivDid = infoDivD.getAttribute("id");
     const infoDivDItemid = infoDivDid.slice(5);
-    console.log(infoDivDItemid);
-    console.log(item.itemID);
     if (infoDivDItemid === item.itemID) {
       console.log("sim");
       infoDivD.remove();
@@ -609,13 +586,6 @@ function retrieveItemsFromStorage() {
         if (currentItem.done) {
           styleItem(currentItem);
         }
-        const currentDiv = document.getElementById(currentItem.itemID);
-        const itemFooter = document.createElement("div");
-        itemFooter.setAttribute("class", "itemFooter");
-        currentDiv.appendChild(itemFooter);
-        removeItemButton(currentItem, itemFooter);
-        editItemButton(currentItem, itemFooter, currentDiv);
-        moveAddButton(projectDiv);
       }
     }
   }
@@ -642,7 +612,6 @@ function editItemButton(item, footerDiv, itemDiv) {
 
 function editItem(item) {
   const currentDiv = document.getElementById(item.itemID);
-  //  const formDiv = document.querySelector(".formDiv");
   addItemForm(currentDiv, "edit");
   const inputTitle = document.getElementById("title");
   const inputDescription = document.getElementById("description");
@@ -659,20 +628,14 @@ function editItem(item) {
   formHandlerEdit(currentDiv);
 }
 
-//on click extend
-
 function makeListFromInput(checkList) {
   const checkListString = checkList;
   const ul = document.createElement("ul");
   const checkListArray = checkListString.split(";");
   for (let i = 0; i < checkListArray.length; i++) {
     const li = document.createElement("li");
-    li.textContent = checkListArray[i];
+    li.textContent = checkListArray[i].trim();
     ul.appendChild(li);
   }
   return ul;
 }
-
-// settings por projecto com order of tasks por due date/ priority
-// div no info esta mal
-//posso por stats: project name/number of tasks not ocmpleted/ tasks completed
