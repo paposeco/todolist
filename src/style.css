@@ -59,7 +59,8 @@ button:hover {
 }
 
 .projectDiv > div,
-#info > div {
+.infoPriority > div,
+.infoDate > div {
   padding: 0px 10px 10px 10px;
 }
 

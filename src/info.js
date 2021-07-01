@@ -135,6 +135,9 @@ function changeItemOnInfo(type) {
     }
     if (objPriority !== undefined && objPriority.priority !== "1") {
       addInfoToDom(objPriority, "priority");
+    } else {
+      const priorityDiv = document.querySelector(".infoPriority");
+      priorityDiv.remove();
     }
   } else {
     let objDueDate;
@@ -145,6 +148,9 @@ function changeItemOnInfo(type) {
     }
     if (objDueDate !== undefined && objDueDate.dueDate !== "") {
       addInfoToDom(objDueDate, "duedate");
+    } else {
+      const duedateDiv = document.querySelector(".infoDueDate");
+      duedateDiv.remove();
     }
   }
 }

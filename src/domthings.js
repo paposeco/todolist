@@ -69,8 +69,8 @@ function addProject(obj) {
   divContent.appendChild(createDiv);
   createDiv.appendChild(projectHeader);
   projectHeader.appendChild(titlePara);
-  const currentDiv = document.getElementById(projectName);
-  addItemButton(currentDiv);
+  const projectDiv = document.getElementById(projectName);
+  addItemButton(projectDiv);
 
   const removeProjectButton = document.createElement("button");
   removeProjectButton.setAttribute("class", "removeProject");
@@ -82,25 +82,22 @@ function addProject(obj) {
   projectHeader.appendChild(removeProjectButton);
 }
 
-function addItemButton(currentDiv) {
-  const formDiv = document.createElement("div");
-  formDiv.setAttribute("class", "formDiv");
-  const createbutton = document.createElement("button");
-  const buttonname = "button" + currentDiv.id;
-  createbutton.setAttribute("id", buttonname);
-  createbutton.setAttribute("name", currentDiv.id);
-  createbutton.setAttribute("title", "Add new item");
-  createbutton.setAttribute("class", "addItem");
-  createbutton.innerHTML = '<i class="las la-plus-square"></i>';
-  currentDiv.appendChild(createbutton);
-  currentDiv.appendChild(formDiv);
-  createbutton.addEventListener("click", function () {
+function addItemButton(projectDiv) {
+  const button = document.createElement("button");
+  const buttonname = "button" + projectDiv.id;
+  button.setAttribute("id", buttonname);
+  button.setAttribute("name", projectDiv.id);
+  button.setAttribute("title", "Add new item");
+  button.setAttribute("class", "addItem");
+  button.innerHTML = '<i class="las la-plus-square"></i>';
+  projectDiv.appendChild(button);
+  button.addEventListener("click", function () {
     const formDivAlreadyExists = document.querySelector(".formDiv");
     if (formDivAlreadyExists !== null && formDivAlreadyExists.hasChildNodes()) {
       return;
     }
-    addItemForm(currentDiv, formDiv, "new");
-    formHandler(currentDiv);
+    addItemForm(projectDiv, "new");
+    formHandler(projectDiv);
   });
 }
 
@@ -110,10 +107,10 @@ function moveAddButton(div) {
   div.appendChild(button);
 }
 
-function formHandler(currentDiv) {
+function formHandler(projectDiv) {
   const cancelButton = document.getElementById("cancelAdd");
   cancelButton.addEventListener("click", function () {
-    const currentForm = document.getElementById("form" + currentDiv.id);
+    const currentForm = document.getElementById("form" + projectDiv.id);
     currentForm.remove();
   });
   const titleFocus = document.getElementById("title").focus();
@@ -125,8 +122,8 @@ function formHandler(currentDiv) {
       itemInfo.push(pair[1]);
       // console.log(pair[0] + ", " + pair[1]);
     }
-    const currentProject = currentDiv.id;
-    const itemDivExisting = currentDiv.querySelectorAll("div.itemDiv");
+    const currentProject = projectDiv.id;
+    const itemDivExisting = projectDiv.querySelectorAll("div.itemDiv");
     let highestItemNumber;
     if (itemDivExisting.length === 0) {
       highestItemNumber = 0;
@@ -135,7 +132,13 @@ function formHandler(currentDiv) {
         const idcomplete = itemDivExisting[i].getAttribute("id");
         const itemword = idcomplete.lastIndexOf("item");
         const id = idcomplete.slice(itemword + 4);
-        highestItemNumber = Number(id) + 1;
+        if (highestItemNumber === undefined) {
+          highestItemNumber = Number(id) + 1;
+        } else {
+          if (highestItemNumber < Number(id) + 1) {
+            highestItemNumber = Number(id) + 1;
+          }
+        }
       }
     }
     const newitem = createList.createNewItem(
@@ -149,17 +152,17 @@ function formHandler(currentDiv) {
       highestItemNumber
     );
     createProject.addItemToProject(currentProject, newitem);
-    addItemToDom(newitem, currentDiv, currentProject);
+    addItemToDom(newitem, projectDiv, currentProject);
     onAddCheckForChangesOnInfo(newitem);
     const itemFooter = document.createElement("div");
     itemFooter.setAttribute("class", "itemFooter");
     const itemDiv = document.getElementById(newitem.itemID);
     itemDiv.appendChild(itemFooter);
     removeItemButton(newitem, itemFooter);
-    editItemButton(newitem, itemFooter);
-    const currentForm = document.getElementById("form" + currentDiv.id);
+    editItemButton(newitem, itemFooter, projectDiv);
+    const currentForm = document.querySelector(".formDiv");
     currentForm.remove();
-    moveAddButton(currentDiv);
+    moveAddButton(projectDiv);
   });
 }
 
@@ -200,7 +203,11 @@ function formHandlerEdit(currentDiv) {
     itemFooter.setAttribute("class", "itemFooter");
     currentDiv.appendChild(itemFooter);
     removeItemButton(currentItem, itemFooter);
-    editItemButton(currentItem, itemFooter);
+    editItemButton(currentItem, itemFooter, currentDiv);
+    const currentForm = document.querySelector(".formDiv");
+    if (currentForm !== null) {
+      currentForm.remove();
+    }
     const nodeProjectDiv = document.getElementById(currentItem.project);
     moveAddButton(nodeProjectDiv);
   });
@@ -217,22 +224,22 @@ function removeItemButton(item, div) {
     currentItem.remove();
     createList.removeItemFromList(item);
     createProject.removeItemFromProject(item.project, item);
+    changeItemOnInfo("priority");
+    changeItemOnInfo("duedate");
     //    storedItems.removeItem(storedItems.key(item.itemID));
   });
   div.appendChild(removeItemBut);
 }
 
-function addItemToDom(item, currentDiv, projectDiv) {
+function addItemToDom(item, projectDiv, projectID) {
   let div;
-  if (currentDiv.getAttribute("class") === "itemDiv") {
-    div = document.getElementById(item.itemID);
-    const nodeProjectDiv = document.getElementById(projectDiv);
-    nodeProjectDiv.appendChild(div);
+  if (projectDiv.getAttribute("class") === "itemDiv") {
+    div = projectDiv;
   } else {
     div = document.createElement("div");
     div.setAttribute("class", "itemDiv");
     div.setAttribute("id", item.itemID);
-    currentDiv.appendChild(div);
+    projectDiv.appendChild(div);
   }
   const itemTitleDiv = document.createElement("div");
   itemTitleDiv.setAttribute("class", "itemTitle");
@@ -284,7 +291,6 @@ function addItemToDom(item, currentDiv, projectDiv) {
     itemNotes.textContent = "Notes: " + item.notes;
   }
 
-  //currentDiv.appendChild(div);
   div.appendChild(itemTitleDiv);
   itemTitleDiv.appendChild(itemTitle);
   div.appendChild(itemStatusDiv);
@@ -376,11 +382,13 @@ function addItemToDomSimplified(item, currentDiv, type) {
   itemCheckListDiv.appendChild(itemCheckList);
 }
 
-function addItemForm(currentDiv, formDiv, neworedit) {
+function addItemForm(projectDiv, neworedit) {
+  const formDiv = document.createElement("div");
+  formDiv.setAttribute("class", "formDiv");
   const form = document.createElement("form");
   form.setAttribute("method", "get");
   form.setAttribute("class", "formNewItem");
-  const formID = "form" + currentDiv.id;
+  const formID = "form" + projectDiv.id;
   form.setAttribute("id", formID);
 
   const div1 = document.createElement("div");
@@ -469,7 +477,7 @@ function addItemForm(currentDiv, formDiv, neworedit) {
   const div7 = document.createElement("div");
   const div8 = document.createElement("div");
 
-  currentDiv.appendChild(formDiv);
+  projectDiv.appendChild(formDiv);
   formDiv.appendChild(form);
   form.appendChild(div1);
   form.appendChild(div2);
@@ -522,7 +530,8 @@ function removeProject(divID) {
   }
   console.log(createList.updateItemList(null, null, null));
   createList.removeAllItemsFromProject(divID);
-  console.log(createList.updateItemList(null, null, null));
+  changeItemOnInfo("priority");
+  changeItemOnInfo("duedate");
   const storedItems = window.localStorage;
   for (let k = 0; k < storedItems.length; k++) {
     const storedItemKey = storedItems.key(k);
@@ -562,13 +571,6 @@ function markItemAsDone(item) {
       changeItemOnInfo("duedate");
     }
   }
-
-  // if (infoDivPItemid === item.itemID) {
-  //   createList.removeItemFromList(item);
-  //   createList.updateItemList(null, "add", item);
-  //   console.log()
-  //}
-
   const currentDiv = document.getElementById(item.itemID);
   const editButton = currentDiv.querySelector(".editItem");
   editButton.remove();
@@ -612,14 +614,14 @@ function retrieveItemsFromStorage() {
         itemFooter.setAttribute("class", "itemFooter");
         currentDiv.appendChild(itemFooter);
         removeItemButton(currentItem, itemFooter);
-        editItemButton(currentItem, itemFooter);
+        editItemButton(currentItem, itemFooter, currentDiv);
         moveAddButton(projectDiv);
       }
     }
   }
 }
 
-function editItemButton(item, div) {
+function editItemButton(item, footerDiv, itemDiv) {
   if (item.done) {
     return;
   }
@@ -633,16 +635,15 @@ function editItemButton(item, div) {
       alert("Finish editing previous item first.");
       return;
     }
-    div.replaceChildren();
     editItem(item);
   });
-  div.appendChild(editItemBut);
+  footerDiv.appendChild(editItemBut);
 }
 
 function editItem(item) {
   const currentDiv = document.getElementById(item.itemID);
-  const formDiv = document.querySelector(".formDiv");
-  addItemForm(currentDiv, formDiv, "edit");
+  //  const formDiv = document.querySelector(".formDiv");
+  addItemForm(currentDiv, "edit");
   const inputTitle = document.getElementById("title");
   const inputDescription = document.getElementById("description");
   const inputDueDate = document.getElementById("dueDate");
@@ -658,7 +659,6 @@ function editItem(item) {
   formHandlerEdit(currentDiv);
 }
 
-// organize todos by date
 //on click extend
 
 function makeListFromInput(checkList) {
@@ -673,5 +673,6 @@ function makeListFromInput(checkList) {
   return ul;
 }
 
-// on delete project ou delete item, remove items from info
-// passasse algo de errado com o numero dos items - depois de editar a ultima div nao é o item com o numero maior e depois repete; ou tento por sempre como estava quando edito e depois a numeraçao das divs fica bem ou entao tento fazer sort do array ou do que quer que seja que esta a ir buscar o numero
+// settings por projecto com order of tasks por due date/ priority
+// div no info esta mal
+//posso por stats: project name/number of tasks not ocmpleted/ tasks completed
