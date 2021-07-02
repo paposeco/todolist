@@ -136,7 +136,9 @@ function changeItemOnInfo(type) {
       addInfoToDom(objPriority, "priority");
     } else {
       const priorityDiv = document.querySelector(".infoPriority");
-      priorityDiv.remove();
+      if (priorityDiv !== null) {
+        priorityDiv.remove();
+      }
     }
   } else {
     let objDueDate;
@@ -149,7 +151,9 @@ function changeItemOnInfo(type) {
       addInfoToDom(objDueDate, "duedate");
     } else {
       const duedateDiv = document.querySelector(".infoDueDate");
-      duedateDiv.remove();
+      if (duedateDiv !== null) {
+        duedateDiv.remove();
+      }
     }
   }
 }
@@ -195,7 +199,7 @@ function addInfoToDom(item, type) {
     infoPriority.setAttribute("class", "infoPriority");
     infoPriority.setAttribute("id", "infoP" + item.itemID);
     const title = document.createElement("h3");
-    title.textContent = "Highest priority task:";
+    title.textContent = "Highest Priority:";
     if (infoDiv.hasChildNodes()) {
       infoDiv.insertBefore(infoPriority, infoDate);
     } else {
@@ -211,7 +215,7 @@ function addInfoToDom(item, type) {
     infoDate.setAttribute("class", "infoDate");
     infoDate.setAttribute("id", "infoD" + item.itemID);
     const title = document.createElement("h3");
-    title.textContent = "Nearest due date task:";
+    title.textContent = "Shortest deadline:";
     infoDiv.appendChild(infoDate);
     infoDate.appendChild(title);
     addItemToDomSimplified(item, infoDate, "closestduedate");

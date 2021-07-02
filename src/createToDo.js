@@ -1,7 +1,7 @@
 import { compareAsc, format, getDate, getMonth, getYear } from "date-fns";
 import { createProject } from "./createProject.js";
 
-export { creationTime, createList };
+export { creationTime, createList, createCheckListObject };
 
 function creationTime() {
   const now = Date.now();
@@ -28,11 +28,28 @@ class toDoCreater {
     this.priority = priority;
     this.creationDate = creationDate;
     this.notes = notes;
-    this.checkList = checkList;
     this.project = project;
     this.done = done;
     this.itemID = project + "item" + itemNumberInProject;
+    this.checkList = createCheckListObject(checkList, this.itemID);
   }
+}
+
+function createCheckListObject(checkList, itemID) {
+  if (checkList === "") {
+    return "";
+  }
+  const checkListString = checkList;
+  const checkListArray = checkListString.split(";");
+  let obj = {};
+  for (let i = 0; i < checkListArray.length; i++) {
+    const cleanString = checkListArray[i].trim();
+    const objKey = "task" + itemID + i;
+    const objKeyStatus = objKey + "Status";
+    obj[objKey] = cleanString;
+    obj[objKeyStatus] = false;
+  }
+  return obj;
 }
 
 const createList = (function () {
@@ -81,6 +98,7 @@ const createList = (function () {
       false
     );
     updateItemList(itemList, "add", newItem);
+    console.log(newItem);
     return newItem;
   };
   const removeItemFromList = function (item) {

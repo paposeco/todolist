@@ -2,7 +2,7 @@ export { createProject };
 
 class projectCreator {
   constructor(title, name, items) {
-    this.title = "Project: " + title;
+    this.title = title;
     this.name = name;
     this.items = [];
   }

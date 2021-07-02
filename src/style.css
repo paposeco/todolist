@@ -10,9 +10,16 @@ body {
   gap: 15px;
 }
 
-button {
+button,
+input[type="button"],
+input[type="submit"],
+select {
   border: 1px black solid;
   background-color: none;
+}
+
+select {
+  width: 30px;
 }
 
 button:hover {
@@ -21,7 +28,8 @@ button:hover {
 
 .removeItem,
 .editItem,
-.removeProject {
+.removeProject,
+.expandall {
   height: 25px;
   width: 25px;
   padding: 0;
@@ -29,8 +37,20 @@ button:hover {
 }
 
 .removeProject,
-.sortProject {
+.sortProject,
+.expandall,
+.closeProject {
   border: none;
+}
+
+.expandall,
+.closeProject {
+  font-size: 16px;
+}
+
+.closeProject {
+  padding: 0;
+  margin: 0;
 }
 
 .sortProject {
@@ -56,8 +76,9 @@ button:hover {
   flex-direction: column;
   gap: 10px;
   border: 1px grey solid;
-  padding: 10px;
+  padding: 3px 10px 10px 10px;
   height: max-content;
+  box-shadow: 0 0 0 2px white, 0 0 0 3px lightgrey;
 }
 
 #info {
@@ -65,7 +86,7 @@ button:hover {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding: 10px;
+  padding: 0px 10px 10px 10px;
   height: max-content;
 }
 
@@ -75,8 +96,12 @@ button:hover {
   padding: 0px 10px 10px 10px;
 }
 
+.closeprojectdiv {
+  padding: 0px !important;
+}
+
 .itemDiv {
-  border: 1px dotted grey;
+  border: 1px dotted lightgrey;
   max-width: 100%;
 }
 
@@ -107,11 +132,16 @@ button:hover {
   justify-content: space-between;
   align-items: center;
   gap: 2px;
-  padding-bottom: 0px !important;
+  padding: 0px 0px 0px 3px !important;
 }
 
 .projectHeader > h2 {
+  margin-top: 0px;
   flex-grow: 1;
+}
+
+.projectHeader > button {
+  flex-shrink: 0;
 }
 
 .formDiv {
@@ -144,14 +174,32 @@ ul li {
   list-style: none;
 }
 
-li:before {
+.taskNotComplete:before {
   font-family: "Line Awesome Free";
-  /* content: "\F35A"; */
   content: "\F04D";
   color: black;
   font-weight: 900;
   padding-left: 15px;
   padding-right: 10px;
+}
+
+.taskNotComplete:hover {
+  cursor: pointer;
+}
+
+li.taskComplete {
+  text-decoration: line-through;
+}
+
+li.taskComplete:before {
+  font-family: "Line Awesome Free";
+  content: "\F14A";
+  color: black;
+  font-weight: 900;
+  padding-left: 15px;
+  padding-right: 10px;
+  text-decoration: none;
+  display: inline-block;
 }
 
 .priority5 i {
@@ -173,4 +221,38 @@ li:before {
 
 .itemCheckList p {
   margin-bottom: 5px;
+}
+
+.itemExpand,
+.itemExpand > p {
+  margin: 0;
+  text-align: center;
+  color: lightgrey;
+}
+
+.itemExpand:hover {
+  cursor: pointer;
+  color: black;
+}
+
+.itemTitle > h3 {
+  margin-bottom: 0px;
+}
+
+.itemPriority > p {
+  margin-bottom: 0px;
+}
+
+.closeprojectdiv {
+  display: flex;
+  flex-direction: row;
+  justify-content: end;
+}
+
+input[type="text"] {
+  width: 93%;
+}
+
+.formNewItem {
+  margin: 5px 0;
 }
