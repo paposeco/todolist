@@ -335,3 +335,83 @@ a:visited {
 a:hover {
   cursor: pointer;
 }
+
+@media screen and (max-width: 414px) {
+  #content {
+    flex-direction: column;
+  }
+  footer p {
+    text-align: center;
+  }
+  .projectDiv {
+    width: 94%;
+  }
+  #info {
+    width: 80%;
+    align-self: center;
+  }
+}
+
+@media screen and (min-width: 415px) and (max-width: 800px) {
+  #content {
+    width: 100%;
+    flex-direction: column;
+  }
+  .projectDiv {
+    width: 97%;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+  .closeprojectdiv {
+    width: 100%;
+  }
+  .itemDiv {
+    width: 45%;
+  }
+  .projectHeader {
+    width: 100%;
+  }
+  #info {
+    flex-direction: row;
+    width: 97%;
+    justify-content: space-around;
+  }
+  #info h3 {
+    margin-top: 0px;
+  }
+  #info button {
+    height: max-content;
+    width: 150px;
+  }
+  #info > div {
+    width: 250px;
+  }
+  footer p {
+    text-align: center;
+  }
+  .infoDate,
+  .infoPriority {
+    width: 200px;
+  }
+
+  #closestduedate {
+    width: 100%;
+    padding-left: 0px;
+    padding-right: 0px;
+  }
+  #closestduedate > div {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  #highestPriority {
+    width: 100%;
+    padding-left: 0px;
+    padding-right: 0px;
+  }
+  #highestPriority > div {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+}
