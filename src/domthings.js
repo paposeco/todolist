@@ -235,7 +235,7 @@ function formHandler(projectDiv) {
     createProject.addItemToProject(currentProject, newitem);
     addItemToDom(newitem, projectDiv, currentProject);
     onAddCheckForChangesOnInfo(newitem);
-    const currentForm = document.querySelector(".formDiv");
+    const currentForm = document.querySelector("form");
     currentForm.remove();
   });
 }
@@ -273,7 +273,7 @@ function formHandlerEdit(currentDiv) {
     createList.updateItemList(null, "add", currentItem);
     addItemToDom(currentItem, currentDiv, currentItem.project);
     onAddCheckForChangesOnInfo(currentItem);
-    const currentForm = document.querySelector(".formDiv");
+    const currentForm = document.querySelector("form");
     if (currentForm !== null) {
       currentForm.remove();
     }
