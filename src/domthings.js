@@ -7,7 +7,14 @@ import {
 } from "./createToDo.js";
 import { onAddCheckForChangesOnInfo, changeItemOnInfo } from "./info.js";
 import { orderTasksP, orderTasksD } from "./index.js";
-export { manageDom, addItemToDomSimplified, addItemToDom, styleItem };
+
+export {
+  manageDom,
+  addItemToDomSimplified,
+  addItemToDom,
+  styleItem,
+  showOrHideDivs,
+};
 
 window.onload = retrieveItemsFromStorage();
 
@@ -44,7 +51,7 @@ function addProject(obj) {
   const createDiv = document.createElement("div");
   let projectTitle;
   let projectName;
-  if (obj === null) {
+  if (obj === null && obj !== "default") {
     projectTitle = window.prompt("Project Name:");
     projectName = "project" + numberOfProjects;
     if (projectTitle === null || projectTitle === "") {
@@ -98,7 +105,8 @@ function addProject(obj) {
   const projectSortButtonP = document.createElement("button");
   projectSortButtonP.setAttribute("class", "sortProject");
   projectSortButtonP.setAttribute("title", "Sort by Priority");
-  projectSortButtonP.innerHTML = '<i class="las la-sort"></i><span>P</span>';
+  projectSortButtonP.innerHTML = '<i class="las la-sort-up"></i><span>P</span>';
+
   projectSortButtonP.addEventListener("click", function () {
     orderTasksP(projectName);
   });
@@ -106,7 +114,7 @@ function addProject(obj) {
   const projectSortButtonD = document.createElement("button");
   projectSortButtonD.setAttribute("class", "sortProject");
   projectSortButtonD.setAttribute("title", "Sort by Due Date");
-  projectSortButtonD.innerHTML = '<i class="las la-sort"></i><span>D</span>';
+  projectSortButtonD.innerHTML = '<i class="las la-sort-up"></i><span>D</span>';
   projectSortButtonD.addEventListener("click", function () {
     orderTasksD(projectName);
   });
@@ -158,6 +166,9 @@ function addItemButton(projectDiv) {
     if (formDivAlreadyExists !== null && formDivAlreadyExists.hasChildNodes()) {
       return;
     }
+    const title = document.createElement("h4");
+    title.textContent = "New Item";
+    projectDiv.appendChild(title);
     addItemForm(projectDiv, "new");
     formHandler(projectDiv);
   });
@@ -177,6 +188,10 @@ function formHandler(projectDiv) {
   cancelButton.addEventListener("click", function () {
     const currentForm = document.getElementById("form" + projectDiv.id);
     currentForm.remove();
+    const titleForm = document.querySelector("h4");
+    if (titleForm !== null) {
+      titleForm.remove();
+    }
   });
   const titleFocus = document.getElementById("title").focus();
   document.querySelector("form").addEventListener("submit", (e) => {
@@ -213,6 +228,7 @@ function formHandler(projectDiv) {
       itemInfo[3],
       itemInfo[4],
       itemInfo[5],
+      itemInfo[6],
       currentProject,
       highestItemNumber
     );
@@ -250,7 +266,8 @@ function formHandlerEdit(currentDiv) {
     currentItem.dueDate = itemInfo[2];
     currentItem.priority = itemInfo[3];
     currentItem.notes = itemInfo[4];
-    currentItem.checkList = createCheckListObject(itemInfo[5], currentItem.ID);
+    currentItem.url = itemInfo[5];
+    currentItem.checkList = createCheckListObject(itemInfo[6], currentItem.ID);
 
     createProject.addItemToProject(currentItem.project, currentItem);
     createList.updateItemList(null, "add", currentItem);
@@ -288,12 +305,16 @@ function addItemToDom(item, projectDiv, projectID) {
     div.setAttribute("id", item.itemID);
     projectDiv.appendChild(div);
   }
+  const titleForm = document.querySelector("h4");
+  if (titleForm !== null) {
+    titleForm.remove();
+  }
   createDomElements(item, div, projectID);
   const itemStatusSpan = div.querySelector(".statusSpan");
   itemStatusSpan.addEventListener("click", function () {
     markItemAsDone(item);
   });
-  showOrHideDivs(item, "hide");
+  showOrHideDivs(item, "show");
   const itemExpand = div.querySelector(".itemExpand");
   itemExpand.addEventListener("click", function () {
     if (div.classList.contains("hidden")) {
@@ -383,6 +404,7 @@ function createDomElements(item, div, projectID) {
   const itemDueDateDiv = document.createElement("div");
   const itemPriorityDiv = document.createElement("div");
   const itemNotesDiv = document.createElement("div");
+  const itemUrlDiv = document.createElement("div");
   const itemCheckListDiv = document.createElement("div");
 
   const divs = [
@@ -394,6 +416,7 @@ function createDomElements(item, div, projectID) {
     itemDueDateDiv,
     itemPriorityDiv,
     itemNotesDiv,
+    itemUrlDiv,
     itemCheckListDiv,
   ];
   const classes = [
@@ -405,6 +428,7 @@ function createDomElements(item, div, projectID) {
     "itemDueDate",
     "itemPriority",
     "itemNotes",
+    "itemUrl",
     "itemCheckList",
   ];
 
@@ -423,6 +447,8 @@ function createDomElements(item, div, projectID) {
   const itemDueDate = document.createElement("p");
   const itemPriority = document.createElement("p");
   const itemNotes = document.createElement("p");
+  const itemUrlPara = document.createElement("p");
+  const itemUrlA = document.createElement("a");
   let itemCheckList;
   if (item.checkList !== undefined && item.checkList !== "") {
     itemCheckList = makeListFromInput(item, item.checkList);
@@ -455,6 +481,13 @@ function createDomElements(item, div, projectID) {
     itemNotes.textContent = "Notes: " + item.notes;
   }
 
+  if (item.url !== "") {
+    itemUrlPara.innerHTML = '<i class="las la-external-link-alt"></i>';
+    itemUrlPara.appendChild(itemUrlA);
+    itemUrlA.textContent = item.url;
+    itemUrlA.setAttribute("href", item.url);
+  }
+
   itemExpand.innerHTML = '<i class="las la-angle-double-down"></i>';
 
   const divChildren = [
@@ -463,6 +496,7 @@ function createDomElements(item, div, projectID) {
     itemStatusDiv,
     itemDescriptionDiv,
     itemNotesDiv,
+    itemUrlDiv,
     itemDueDateDiv,
     itemCheckListDiv,
   ];
@@ -484,7 +518,7 @@ function createDomElements(item, div, projectID) {
   itemDescriptionDiv.appendChild(itemDescription);
   itemDueDateDiv.appendChild(itemDueDate);
   itemNotesDiv.appendChild(itemNotes);
-
+  itemUrlDiv.appendChild(itemUrlPara);
   itemCheckListDiv.appendChild(itemCheckList);
 }
 
@@ -514,7 +548,7 @@ function addItemForm(projectDiv, neworedit) {
   div1.setAttribute("class", "formNewItem");
   const label1 = document.createElement("label");
   label1.setAttribute("for", "title");
-  label1.innerHTML = "Title: <br>";
+  label1.innerHTML = "Title:";
   const input1 = document.createElement("input");
   input1.setAttribute("type", "text");
   input1.setAttribute("name", "title");
@@ -565,10 +599,23 @@ function addItemForm(projectDiv, neworedit) {
   const label5 = document.createElement("label");
   label5.setAttribute("for", "notes");
   label5.innerHTML = "Notes: <br>";
-  const input5 = document.createElement("input");
-  input5.setAttribute("type", "text");
+  const input5 = document.createElement("textarea");
   input5.setAttribute("name", "notes");
   input5.setAttribute("id", "notes");
+  // input5.setAttribute("rows", "5");
+  // input5.setAttribute("cols", "36");
+  input5.setAttribute("maxlength", "500");
+  input5.style.resize = "none";
+
+  const div9 = document.createElement("div");
+  div9.setAttribute("class", "formNewItem");
+  const label9 = document.createElement("label");
+  label9.setAttribute("for", "link");
+  label9.textContent = "Add a link:";
+  const input9 = document.createElement("input");
+  input9.setAttribute("type", "url");
+  input9.setAttribute("name", "link");
+  input9.setAttribute("id", "link");
 
   const div6 = document.createElement("div");
   div6.setAttribute("class", "formNewItem");
@@ -581,9 +628,9 @@ function addItemForm(projectDiv, neworedit) {
   input6.setAttribute("name", "checkList");
   input6.setAttribute("id", "checkList");
 
-  const divs = [div1, div2, div3, div4, div5, div6];
-  const inputs = [input1, input2, input3, input4, input5, input6];
-  const labels = [label1, label2, label3, label4, label5, label6];
+  const divs = [div1, div2, div3, div4, div5, div9, div6];
+  const inputs = [input1, input2, input3, input4, input5, input9, input6];
+  const labels = [label1, label2, label3, label4, label5, label9, label6];
   divs.forEach(function (div, index) {
     div.appendChild(labels[index]);
     div.appendChild(inputs[index]);
@@ -594,6 +641,8 @@ function addItemForm(projectDiv, neworedit) {
   formDiv.appendChild(form);
   const div7 = document.createElement("div");
   const div8 = document.createElement("div");
+  const formfooter = document.createElement("div");
+  formfooter.setAttribute("class", "formfooter");
 
   if (neworedit === "new") {
     div7.setAttribute("class", "formNewItem");
@@ -608,17 +657,17 @@ function addItemForm(projectDiv, neworedit) {
     input8.setAttribute("value", "Cancel");
     input8.setAttribute("id", "cancelAdd");
     div8.appendChild(input8);
-
-    form.appendChild(div7);
-    form.appendChild(div8);
+    formfooter.appendChild(div7);
+    formfooter.appendChild(div8);
+    form.appendChild(formfooter);
   } else {
     div7.setAttribute("class", "formNewItem");
     const input7 = document.createElement("input");
     input7.setAttribute("type", "submit");
     input7.setAttribute("value", "save");
     div7.appendChild(input7);
-
-    form.appendChild(div7);
+    formfooter.appendChild(div7);
+    form.appendChild(formfooter);
   }
 }
 
@@ -694,7 +743,9 @@ function styleItem(item) {
 
 function retrieveItemsFromStorage() {
   const storedItems = window.localStorage;
-  if (storedItems.length != 0) {
+  if (storedItems.length === 0) {
+    return;
+  } else {
     let array = [];
     for (let j = 0; j < storedItems.length; j++) {
       let projectNumber = storedItems.key(j).replace("project", "");
@@ -710,6 +761,7 @@ function retrieveItemsFromStorage() {
       for (let k = 0; k < projectItems.length; k++) {
         const currentItem = projectItems[k];
         addItemToDom(currentItem, projectDiv);
+        showOrHideDivs(currentItem, "hide");
         createList.updateItemList(null, "add", currentItem);
         if (currentItem.done) {
           styleItem(currentItem);
@@ -730,9 +782,10 @@ function editItemButton(item, footerDiv, itemDiv) {
   editItemBut.addEventListener("click", function () {
     const formExists = document.querySelector("form");
     if (formExists !== null) {
-      alert("Finish editing previous item first.");
+      alert("Finish editing or cancel previous item first.");
       return;
     }
+
     editItem(item);
   });
   footerDiv.appendChild(editItemBut);
@@ -740,25 +793,29 @@ function editItemButton(item, footerDiv, itemDiv) {
 
 function editItem(item) {
   const currentDiv = document.getElementById(item.itemID);
+  const title = document.createElement("h4");
+  title.textContent = "Edit Item";
+  currentDiv.appendChild(title);
   addItemForm(currentDiv, "edit");
   const inputTitle = document.getElementById("title");
   const inputDescription = document.getElementById("description");
   const inputDueDate = document.getElementById("dueDate");
   const inputPriority = document.getElementById("priority");
   const inputNotes = document.getElementById("notes");
+  const inputUrl = document.getElementById("link");
   const inputCheckList = document.getElementById("checkList");
   inputTitle.value = item.title;
   inputDescription.value = item.description;
   inputDueDate.value = item.dueDate;
   inputPriority.value = item.priority;
   inputNotes.value = item.notes;
+  inputUrl.value = item.url;
   inputCheckList.value = createStringFromTasklist(item.checkList);
   formHandlerEdit(currentDiv);
 }
 
 function createStringFromTasklist(checkList) {
   const objvalues = Object.values(checkList);
-  console.log(objvalues);
   const objvaluesStringsOnly = objvalues.filter(
     (task) => typeof task !== "boolean"
   );
@@ -785,7 +842,6 @@ function makeListFromInput(item, checkList) {
       ul.appendChild(li);
     }
   }
-  //span.textContent = checkList[key + "Status"];
   return ul;
 }
 
@@ -831,6 +887,7 @@ function showOrHideDivs(item, showorhide) {
   const description = itemdiv.querySelector(".itemDescription");
   const status = itemdiv.querySelector(".itemStatus");
   const notes = itemdiv.querySelector(".itemNotes");
+  const url = itemdiv.querySelector(".itemUrl");
   const checkList = itemdiv.querySelector(".itemCheckList");
   const expand = itemdiv.querySelector(".itemExpand");
   if (showorhide === "hide") {
@@ -841,6 +898,7 @@ function showOrHideDivs(item, showorhide) {
     description.style.display = "none";
     status.style.display = "none";
     notes.style.display = "none";
+    url.style.display = "none";
     checkList.style.display = "none";
     expand.innerHTML = '<i class="las la-angle-double-down"></i>';
   } else {
@@ -851,6 +909,7 @@ function showOrHideDivs(item, showorhide) {
     description.style.display = "contents";
     status.style.display = "contents";
     notes.style.display = "contents";
+    url.style.display = "contents";
     checkList.style.display = "contents";
     expand.innerHTML = '<i class="las la-angle-double-up"></i>';
   }

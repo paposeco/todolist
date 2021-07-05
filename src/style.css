@@ -2,6 +2,10 @@ body {
   padding: 0;
   margin: 10px;
   box-sizing: border-box;
+  font-family: Arial, Helvetica Neue, Helvetica, sans-serif;
+  min-height: 98vh;
+  display: flex;
+  flex-direction: column;
 }
 
 #content {
@@ -10,16 +14,29 @@ body {
   gap: 15px;
 }
 
+footer {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+footer p {
+  text-align: left;
+}
+
 button,
 input[type="button"],
 input[type="submit"],
 select {
   border: 1px black solid;
-  background-color: none;
+  background-color: white;
 }
 
 select {
-  width: 30px;
+  width: 40px;
+  text-align: center;
+  border: 1px solid grey;
 }
 
 button:hover {
@@ -72,6 +89,7 @@ button:hover {
 
 .projectDiv {
   width: 300px;
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -83,6 +101,7 @@ button:hover {
 
 #info {
   width: 250px;
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -103,6 +122,10 @@ button:hover {
 .itemDiv {
   border: 1px dotted lightgrey;
   max-width: 100%;
+}
+
+.projectDiv h4 {
+  margin-bottom: 0px;
 }
 
 .statusSpan {
@@ -137,6 +160,7 @@ button:hover {
 
 .projectHeader > h2 {
   margin-top: 0px;
+  margin-bottom: 0px;
   flex-grow: 1;
 }
 
@@ -163,6 +187,11 @@ button:hover {
 
 label[for="checkList"]:after {
   content: "Separate list items with ';'";
+  font-size: 12px;
+}
+
+label[for="title"]:after {
+  content: " (*required)";
   font-size: 12px;
 }
 
@@ -235,8 +264,17 @@ li.taskComplete:before {
   color: black;
 }
 
+.itemTitle {
+  max-width: 87%;
+}
 .itemTitle > h3 {
   margin-bottom: 0px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.itemPriority {
+  flex-shrink: 0;
 }
 
 .itemPriority > p {
@@ -246,13 +284,54 @@ li.taskComplete:before {
 .closeprojectdiv {
   display: flex;
   flex-direction: row;
-  justify-content: end;
+  justify-content: flex-end;
 }
 
-input[type="text"] {
-  width: 93%;
+input[type="text"],
+input[type="url"] {
+  width: 97%;
+  border: 1px solid grey;
+  margin-top: 5px;
+  margin-top: 5px;
+}
+
+input[type="date"] {
+  border: 1px solid grey;
+  text-align: center;
 }
 
 .formNewItem {
   margin: 5px 0;
+}
+
+.formfooter {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 20px;
+}
+
+.formfooter input {
+  width: 80px;
+}
+
+textarea {
+  height: 100px;
+  width: 97%;
+}
+
+input:focus {
+  outline: none;
+}
+
+a {
+  color: #70c2d8;
+}
+
+a:visited {
+  color: #38616c;
+}
+
+a:hover {
+  cursor: pointer;
 }

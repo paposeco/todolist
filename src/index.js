@@ -1,4 +1,9 @@
-import { manageDom, addItemToDom, styleItem } from "./domthings.js";
+import {
+  manageDom,
+  addItemToDom,
+  styleItem,
+  showOrHideDivs,
+} from "./domthings.js";
 import { checkInfoFromStorage } from "./info.js";
 import { createList } from "./createToDo.js";
 import { compareAsc, parseISO } from "date-fns";
@@ -23,6 +28,7 @@ function orderTasksD(projectDivId) {
   itemdivs.forEach((item) => item.remove());
   taskInProject.forEach(function (item) {
     addItemToDom(item, projectDiv, projectDivId);
+    showOrHideDivs(item, "hide");
     if (item.done) {
       styleItem(item);
     }
@@ -55,6 +61,7 @@ function orderTasksP(projectDivId) {
   itemdivs.forEach((item) => item.remove());
   taskInProject.forEach(function (item) {
     addItemToDom(item, projectDiv, projectDivId);
+    showOrHideDivs(item, "hide");
     if (item.done) {
       styleItem(item);
     }
@@ -69,3 +76,9 @@ function comparePriority(a, b) {
   }
   return Number(b.priority) - Number(a.priority);
 }
+
+const footerDiv = document.querySelector("footer");
+const para = document.createElement("p");
+para.innerHTML =
+  '<a href="https://github.com/paposeco/" alt="github"><span><i class="lab la-github"></i></span>Fabi</a>';
+footerDiv.appendChild(para);

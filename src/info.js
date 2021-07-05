@@ -215,7 +215,7 @@ function addInfoToDom(item, type) {
     infoDate.setAttribute("class", "infoDate");
     infoDate.setAttribute("id", "infoD" + item.itemID);
     const title = document.createElement("h3");
-    title.textContent = "Shortest deadline:";
+    title.textContent = "Closest Deadline:";
     infoDiv.appendChild(infoDate);
     infoDate.appendChild(title);
     addItemToDomSimplified(item, infoDate, "closestduedate");

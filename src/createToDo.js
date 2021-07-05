@@ -17,6 +17,7 @@ class toDoCreater {
     priority,
     creationDate,
     notes,
+    url,
     checkList,
     project,
     itemNumberInProject,
@@ -28,6 +29,7 @@ class toDoCreater {
     this.priority = priority;
     this.creationDate = creationDate;
     this.notes = notes;
+    this.url = url;
     this.project = project;
     this.done = done;
     this.itemID = project + "item" + itemNumberInProject;
@@ -80,6 +82,7 @@ const createList = (function () {
     dueDate,
     priority,
     notes,
+    url,
     checkList,
     project,
     itemNumberInProject
@@ -92,13 +95,13 @@ const createList = (function () {
       priority,
       currentTime,
       notes,
+      url,
       checkList,
       project,
       itemNumberInProject,
       false
     );
     updateItemList(itemList, "add", newItem);
-    console.log(newItem);
     return newItem;
   };
   const removeItemFromList = function (item) {
