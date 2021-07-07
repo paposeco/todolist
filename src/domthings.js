@@ -16,8 +16,10 @@ export {
   showOrHideDivs,
 };
 
+//gets projects and tasks from storage and displays on page
 window.onload = retrieveItemsFromStorage();
 
+// creates addproject button with event listener addproject function
 function manageDom() {
   const divContent = document.getElementById("content");
   const addProjectButton = document.createElement("button");
@@ -27,6 +29,7 @@ function manageDom() {
   const divAddProject = document.getElementById("info");
   divAddProject.appendChild(addProjectButton);
   const storedItems = window.localStorage;
+  // if there are now projects in storage, creates an empty default list
   if (storedItems.length === 0) {
     addProject("default");
   }
@@ -36,6 +39,7 @@ function manageDom() {
   });
 }
 
+// adds project to page with a unique ID and a title provided by the user with a prompt. checks for the number of projectDivs and adds 1 to that number
 function addProject(obj) {
   const divContent = document.getElementById("content");
   const divs = document.querySelectorAll("div#content > div.projectDiv");
@@ -65,10 +69,12 @@ function addProject(obj) {
     projectName = obj.name;
   }
 
+  // calls the projectcollection of createproject function, that uses a constructor; the project is created without any items
   const createNewProject = createProject.projectCollection(
     projectTitle,
     projectName
   );
+  // displays projects on page
   const projectHeader = document.createElement("div");
   projectHeader.setAttribute("class", "projectHeader");
   const closeproject = document.createElement("div");
@@ -82,8 +88,10 @@ function addProject(obj) {
   createDiv.appendChild(projectHeader);
   projectHeader.appendChild(titlePara);
   const projectDiv = document.getElementById(projectName);
+  // creates button for adding tasks to project
   addItemButton(projectDiv);
 
+  // creates 2 buttons for deleting projects: 1 as a cross on top right corner,and 1 with a basket next to the project title
   const closeprojectbutton = document.createElement("button");
   closeprojectbutton.setAttribute("class", "closeProject");
   closeprojectbutton.setAttribute("title", "Delete Project");
@@ -102,6 +110,7 @@ function addProject(obj) {
   });
   projectHeader.appendChild(removeProjectButton);
 
+  // adds buttons for sorting tasks by priority and due date
   const projectSortButtonP = document.createElement("button");
   projectSortButtonP.setAttribute("class", "sortProject");
   projectSortButtonP.setAttribute("title", "Sort by Priority");
@@ -120,6 +129,7 @@ function addProject(obj) {
   });
   projectHeader.appendChild(projectSortButtonD);
 
+  // adds button to expand all tasks on project
   const projectExpandAll = document.createElement("button");
   projectExpandAll.setAttribute("class", "expandall");
   projectExpandAll.classList.add("collapsed");
@@ -135,6 +145,7 @@ function addProject(obj) {
         itemarray = project.items;
       }
     });
+    // each task has a class of expanded or collapsed which is switched accordingly
     if (projectExpandAll.classList.contains("collapsed")) {
       itemarray.forEach((item) => showOrHideDivs(item, "show"));
       projectExpandAll.setAttribute("title", "Collapse All");
@@ -152,6 +163,7 @@ function addProject(obj) {
   projectHeader.appendChild(projectExpandAll);
 }
 
+// creates button for adding items to project; the button has an ID that related to the project div it i on.
 function addItemButton(projectDiv) {
   const button = document.createElement("button");
   const buttonname = "button" + projectDiv.id;
@@ -162,6 +174,7 @@ function addItemButton(projectDiv) {
   button.innerHTML = '<i class="las la-plus-square"></i>';
   projectDiv.appendChild(button);
   button.addEventListener("click", function () {
+    // prevents user from adding items on more than one project at a time
     const formDivAlreadyExists = document.querySelector(".formDiv");
     if (formDivAlreadyExists !== null && formDivAlreadyExists.hasChildNodes()) {
       return;
@@ -169,11 +182,14 @@ function addItemButton(projectDiv) {
     const title = document.createElement("h4");
     title.textContent = "New Item";
     projectDiv.appendChild(title);
+    // displays form for adding new item
     addItemForm(projectDiv, "new");
+    // receives the input the user provided and displays the task created
     formHandler(projectDiv);
   });
 }
 
+// after adding a new task, the add item button is moved to the end of the task list
 function moveAddButton(div) {
   if (div.getAttribute("class") === "itemDiv") {
     return;
@@ -183,9 +199,11 @@ function moveAddButton(div) {
   div.appendChild(button);
 }
 
+// on form submit, creates a new item with the constructor defined in createList
 function formHandler(projectDiv) {
   const cancelButton = document.getElementById("cancelAdd");
   cancelButton.addEventListener("click", function () {
+    // if user presses cancel, removes form from dom
     const currentForm = document.getElementById("form" + projectDiv.id);
     currentForm.remove();
     const titleForm = document.querySelector("h4");
@@ -197,6 +215,7 @@ function formHandler(projectDiv) {
   document.querySelector("form").addEventListener("submit", (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
+    //places info submitted on form on an array
     let itemInfo = [];
     for (const pair of formData.entries()) {
       itemInfo.push(pair[1]);
@@ -205,6 +224,7 @@ function formHandler(projectDiv) {
     const currentProject = projectDiv.id;
     const itemDivExisting = projectDiv.querySelectorAll("div.itemDiv");
     let highestItemNumber;
+    // determines the highest task ID on the current project; the new task will have that ID+1
     if (itemDivExisting.length === 0) {
       highestItemNumber = 0;
     } else {
@@ -221,6 +241,7 @@ function formHandler(projectDiv) {
         }
       }
     }
+    // creates new task
     const newitem = createList.createNewItem(
       itemInfo[0],
       itemInfo[1],
@@ -232,14 +253,19 @@ function formHandler(projectDiv) {
       currentProject,
       highestItemNumber
     );
+    // adds task to corresponding project
     createProject.addItemToProject(currentProject, newitem);
+    // displays task on dom
     addItemToDom(newitem, projectDiv, currentProject);
+    //updates info on page
     onAddCheckForChangesOnInfo(newitem);
+    //removes form
     const currentForm = document.querySelector("form");
     currentForm.remove();
   });
 }
 
+//similar to formHandler, but first deletes the task from the project and from the list of tasks; the task ID remains the same
 function formHandlerEdit(currentDiv) {
   const titleFocus = document.getElementById("title").focus();
   document.querySelector("form").addEventListener("submit", (e) => {
@@ -257,10 +283,12 @@ function formHandlerEdit(currentDiv) {
         break;
       }
     }
+    // removes task from project and from list of tasks and removes task from dom
     createProject.removeItemFromProject(currentItem.project, currentItem);
     createList.removeItemFromList(currentItem);
     currentDiv.replaceChildren();
 
+    // gets the updated info
     currentItem.title = itemInfo[0];
     currentItem.description = itemInfo[1];
     currentItem.dueDate = itemInfo[2];
@@ -269,8 +297,10 @@ function formHandlerEdit(currentDiv) {
     currentItem.url = itemInfo[5];
     currentItem.checkList = createCheckListObject(itemInfo[6], currentItem.ID);
 
+    // creates and adds the updated task to the current project;
     createProject.addItemToProject(currentItem.project, currentItem);
     createList.updateItemList(null, "add", currentItem);
+    // displays the task on dom and updates info; removes form from page
     addItemToDom(currentItem, currentDiv, currentItem.project);
     onAddCheckForChangesOnInfo(currentItem);
     const currentForm = document.querySelector("form");
@@ -280,6 +310,7 @@ function formHandlerEdit(currentDiv) {
   });
 }
 
+// creates button for removing task
 function removeItemButton(item, div) {
   const storedItems = window.localStorage;
   const removeItemBut = document.createElement("button");
@@ -288,9 +319,13 @@ function removeItemButton(item, div) {
   removeItemBut.setAttribute("title", "Delete item");
   removeItemBut.innerHTML = '<i class="las la-trash"></i>';
   removeItemBut.addEventListener("click", function () {
+    //removes task from dom
     currentItem.remove();
+    //removes task from list of tasks
     createList.removeItemFromList(item);
+    //removes task from project
     createProject.removeItemFromProject(item.project, item);
+    // checks if it's necessary to change tasks on info
     changeItemOnInfo("priority");
     changeItemOnInfo("duedate");
   });
@@ -305,17 +340,22 @@ function addItemToDom(item, projectDiv, projectID) {
     div.setAttribute("id", item.itemID);
     projectDiv.appendChild(div);
   }
+  // removes temporary title for form
   const titleForm = document.querySelector("h4");
   if (titleForm !== null) {
     titleForm.remove();
   }
+  // creates dom elements
   createDomElements(item, div, projectID);
+  // creates event listener task status, so that the user can mark task as finished
   const itemStatusSpan = div.querySelector(".statusSpan");
   itemStatusSpan.addEventListener("click", function () {
     markItemAsDone(item);
   });
+  // after adding item to dom, item is expanded
   showOrHideDivs(item, "show");
   const itemExpand = div.querySelector(".itemExpand");
+  //adds event listener so that the user can collapse task
   itemExpand.addEventListener("click", function () {
     if (div.classList.contains("hidden")) {
       showOrHideDivs(item, "show");
@@ -323,6 +363,7 @@ function addItemToDom(item, projectDiv, projectID) {
       showOrHideDivs(item, "hide");
     }
   });
+  // adds remove and edit button to task
   const itemFooter = document.createElement("div");
   itemFooter.setAttribute("class", "itemFooter");
   const itemDiv = document.getElementById(item.itemID);
@@ -333,6 +374,7 @@ function addItemToDom(item, projectDiv, projectID) {
   moveAddButton(newprojectdiv);
 }
 
+// similar to previous function, but instead of using createdomelement to show all the available information on a task, only shows some; to be used on the info section
 function addItemToDomSimplified(item, currentDiv, type) {
   let div = document.createElement("div");
   div.setAttribute("class", "itemDiv");
@@ -395,7 +437,9 @@ function addItemToDomSimplified(item, currentDiv, type) {
   itemDueDateDiv.appendChild(itemDueDate);
 }
 
+// creates dom elements to display task information
 function createDomElements(item, div, projectID) {
+  // each piece of information has its own div
   const itemHeaderDiv = document.createElement("div");
   const itemTitleDiv = document.createElement("div");
   const itemExpandDiv = document.createElement("div");
@@ -432,6 +476,7 @@ function createDomElements(item, div, projectID) {
     "itemCheckList",
   ];
 
+  // sets class for each div
   for (let i = 0; i < divs.length; i++) {
     divs[i].setAttribute("class", classes[i]);
   }
@@ -450,6 +495,7 @@ function createDomElements(item, div, projectID) {
   const itemUrlPara = document.createElement("p");
   const itemUrlA = document.createElement("a");
   let itemCheckList;
+  // if the task has a checklist, displays a list by calling makelistfrominput
   if (item.checkList !== undefined && item.checkList !== "") {
     itemCheckList = makeListFromInput(item, item.checkList);
     const itemCheckListTitle = document.createElement("p");
@@ -522,19 +568,7 @@ function createDomElements(item, div, projectID) {
   itemCheckListDiv.appendChild(itemCheckList);
 }
 
-function countTasks(item) {
-  const fullchecklist = item.checkList;
-  const checklistarray = Object.values(fullchecklist);
-  let completedtasks = 0;
-  let totaltasks = Number(checklistarray.length) / 2;
-  checklistarray.forEach(function (element) {
-    if (typeof element === "boolean" && element) {
-      ++completedtasks;
-    }
-  });
-  return [completedtasks, totaltasks];
-}
-
+// creates form on dom
 function addItemForm(projectDiv, neworedit) {
   const formDiv = document.createElement("div");
   formDiv.setAttribute("class", "formDiv");
@@ -565,6 +599,7 @@ function addItemForm(projectDiv, neworedit) {
   input2.setAttribute("name", "description");
   input2.setAttribute("id", "description");
 
+  // due date needs to be higher than the date of task creation
   const currentTime = creationTime();
   const div3 = document.createElement("div");
   div3.setAttribute("class", "formNewItem");
@@ -602,8 +637,6 @@ function addItemForm(projectDiv, neworedit) {
   const input5 = document.createElement("textarea");
   input5.setAttribute("name", "notes");
   input5.setAttribute("id", "notes");
-  // input5.setAttribute("rows", "5");
-  // input5.setAttribute("cols", "36");
   input5.setAttribute("maxlength", "500");
   input5.style.resize = "none";
 
@@ -644,6 +677,7 @@ function addItemForm(projectDiv, neworedit) {
   const formfooter = document.createElement("div");
   formfooter.setAttribute("class", "formfooter");
 
+  // if the task already exists, only shows "save" button; otherwise shows Add and Cancel buttons
   if (neworedit === "new") {
     div7.setAttribute("class", "formNewItem");
     const input7 = document.createElement("input");
@@ -664,13 +698,14 @@ function addItemForm(projectDiv, neworedit) {
     div7.setAttribute("class", "formNewItem");
     const input7 = document.createElement("input");
     input7.setAttribute("type", "submit");
-    input7.setAttribute("value", "save");
+    input7.setAttribute("value", "Save");
     div7.appendChild(input7);
     formfooter.appendChild(div7);
     form.appendChild(formfooter);
   }
 }
 
+//remove project from dom and from list of projects; updates tasks on info if necessary; removes item from local storage
 function removeProject(divID) {
   const currentDiv = document.getElementById(divID);
   const currentItemList = createList.updateItemList(null, null, null);
@@ -699,12 +734,18 @@ function removeProject(divID) {
   return createProject.projectsCreated;
 }
 
+// mark task as complete
 function markItemAsDone(item) {
+  // removes task from list of tasks
   createList.removeItemFromList(item);
+  //changes task status to true
   item.done = true;
+  // if the task as a checklist of subtasks, mark those as finished too
   markAllTasksComplete(item);
+  // adds the task back to list of tasks and updates task on project list
   createList.updateItemList(null, "add", item);
   createProject.editItemInProject(item);
+  // changes task appearance on dom and updates info if necessary
   styleItem(item);
   const infoDivP = document.querySelector(".infoPriority");
   const infoDivD = document.querySelector(".infoDate");
@@ -727,9 +768,11 @@ function markItemAsDone(item) {
   }
   const currentDiv = document.getElementById(item.itemID);
   const editButton = currentDiv.querySelector(".editItem");
+  //after a task has been marked as finished, it can't be edited, only removed
   editButton.remove();
 }
 
+// a finished task as a status text of Done and a checked square
 function styleItem(item) {
   const itemDiv = document.getElementById(item.itemID);
   const itemStatusDivP = itemDiv.querySelector(".itemStatus > p");
@@ -741,6 +784,7 @@ function styleItem(item) {
   itemStatusDivP.appendChild(itemStatusDivSpan);
 }
 
+// on page load, retrieves projects from storage and displays them on page with addproject and additemtodom for each task
 function retrieveItemsFromStorage() {
   const storedItems = window.localStorage;
   if (storedItems.length === 0) {
@@ -771,6 +815,7 @@ function retrieveItemsFromStorage() {
   }
 }
 
+//creates edit button, add event listener and prevents user from editing two items at the same time
 function editItemButton(item, footerDiv, itemDiv) {
   if (item.done) {
     return;
@@ -791,6 +836,7 @@ function editItemButton(item, footerDiv, itemDiv) {
   footerDiv.appendChild(editItemBut);
 }
 
+// calls the additemform function and display the form with existing item values; calls formhandleredit to handle current input values
 function editItem(item) {
   const currentDiv = document.getElementById(item.itemID);
   const title = document.createElement("h4");
@@ -814,6 +860,7 @@ function editItem(item) {
   formHandlerEdit(currentDiv);
 }
 
+// when editing a task, transforms the checklist back to a string
 function createStringFromTasklist(checkList) {
   const objvalues = Object.values(checkList);
   const objvaluesStringsOnly = objvalues.filter(
@@ -824,6 +871,7 @@ function createStringFromTasklist(checkList) {
   return finalstring;
 }
 
+// creates a list ul from object of subtasks; give unique id to each li
 function makeListFromInput(item, checkList) {
   const ul = document.createElement("ul");
   for (const [key, value] of Object.entries(checkList)) {
@@ -833,6 +881,7 @@ function makeListFromInput(item, checkList) {
       li.setAttribute("id", key);
       if (!checkList[key + "Status"]) {
         li.setAttribute("class", "taskNotComplete");
+        // adds eventlistener to each li to mark subtask as complete
         li.addEventListener("click", function (event) {
           markTaskComplete(event, li, item);
         });
@@ -845,6 +894,21 @@ function makeListFromInput(item, checkList) {
   return ul;
 }
 
+// count number of subtasks in checklist; returns number of completed subtasks and total number of tasks
+function countTasks(item) {
+  const fullchecklist = item.checkList;
+  const checklistarray = Object.values(fullchecklist);
+  let completedtasks = 0;
+  let totaltasks = Number(checklistarray.length) / 2;
+  checklistarray.forEach(function (element) {
+    if (typeof element === "boolean" && element) {
+      ++completedtasks;
+    }
+  });
+  return [completedtasks, totaltasks];
+}
+
+// marks subtask as complete and updates task on task list and project.
 function markTaskComplete(event, li, item) {
   if (event.target.getAttribute("class") === "taskComplete") {
     return;
@@ -863,6 +927,7 @@ function markTaskComplete(event, li, item) {
     '<i class="las la-tasks"></i> Tasks (' + tasks[0] + "/" + tasks[1] + ")";
 }
 
+// if a task if marked as finished, mark every subtask on checklist as complete too
 function markAllTasksComplete(item) {
   const objCheckList = item.checkList;
   for (const [key, value] of Object.entries(objCheckList)) {
@@ -882,6 +947,7 @@ function markAllTasksComplete(item) {
   return item;
 }
 
+// for collapsing and expanding task
 function showOrHideDivs(item, showorhide) {
   const itemdiv = document.getElementById(item.itemID);
   const description = itemdiv.querySelector(".itemDescription");

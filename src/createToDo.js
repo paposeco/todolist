@@ -3,12 +3,14 @@ import { createProject } from "./createProject.js";
 
 export { creationTime, createList, createCheckListObject };
 
+// for registering time of task creation
 function creationTime() {
   const now = Date.now();
   const formatedDate = format(now, "yyyy-MM-dd");
   return formatedDate;
 }
 
+// task constructor class
 class toDoCreater {
   constructor(
     title,
@@ -37,6 +39,7 @@ class toDoCreater {
   }
 }
 
+// each task can have a checklist with subtasks. the user inputs the subtasks on a text input, separating each task with a ";" with is transformed into an object with function
 function createCheckListObject(checkList, itemID) {
   if (checkList === "") {
     return "";
@@ -54,13 +57,16 @@ function createCheckListObject(checkList, itemID) {
   return obj;
 }
 
+// function factory to create tasks, save tasks on an array and remove tasks
 const createList = (function () {
   let itemList = [];
   const updateItemList = function (newlist, addorremove, item) {
     if (addorremove === "add") {
+      // when a new task is created, adds task to itemList
       itemList.push(item);
       return itemList;
     } else if (newlist === null && addorremove === null && item === null) {
+      // for getting and up to date list of existing tasks
       return itemList;
     } else {
       itemList = newlist;
@@ -76,6 +82,7 @@ const createList = (function () {
     }
   };
 
+  // uses the constructor todocreator and updates item list
   const createNewItem = function (
     title,
     description,
@@ -99,6 +106,7 @@ const createList = (function () {
       checkList,
       project,
       itemNumberInProject,
+      //every item created starts with a !done
       false
     );
     updateItemList(itemList, "add", newItem);

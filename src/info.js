@@ -3,6 +3,9 @@ import { addItemToDomSimplified } from "./domthings.js";
 import { compareAsc, parseISO } from "date-fns";
 export { checkInfoFromStorage, onAddCheckForChangesOnInfo, changeItemOnInfo };
 
+// this file creates the info section on the left of the page/ top for small screens. Displays highest priority task and closest due date. Only tasks with > 1 priority are displayed
+
+// looks for the highest priority task on a list of tasks. returns highest priority task
 function highestPriority(items, objH) {
   let objHighest;
   if (objH !== undefined) {
@@ -10,6 +13,7 @@ function highestPriority(items, objH) {
   }
   for (let i = 0; i < items.length; i++) {
     const obj = items[i];
+    // skips items that are finished
     if (obj.done) {
       continue;
     }
@@ -18,6 +22,7 @@ function highestPriority(items, objH) {
       objHighest = obj;
       continue;
     }
+    // objHighest is updated every time a higher priority task is found. If priority is five, exits the loop with that task
     if (priority > objHighest.priority) {
       objHighest = obj;
       if (priority === "5") {
@@ -28,6 +33,7 @@ function highestPriority(items, objH) {
   return objHighest;
 }
 
+// compares priority between two tasks
 function highestPrioritySingle(item, objH) {
   let objHighest;
   if (objH !== undefined) {
@@ -40,6 +46,7 @@ function highestPrioritySingle(item, objH) {
   }
 }
 
+// same thing as the highest priority, but comparing dates. returns the task with the closest due date
 function closestDueDate(items, objD) {
   let closest;
   if (objD !== undefined) {
@@ -66,6 +73,7 @@ function closestDueDate(items, objD) {
   return closest;
 }
 
+// compares due date between two tasks
 function closestDueDateSingle(item, objD) {
   let objClosest;
   if (objD !== undefined) {
@@ -81,29 +89,36 @@ function closestDueDateSingle(item, objD) {
   return objClosest;
 }
 
+// whenever a new task is created, checks if the tasks displayed as highest priority / closest due date, are still highest/ closest
 function onAddCheckForChangesOnInfo(item) {
   const objPriority = document.querySelector(".infoPriority");
   const objDate = document.querySelector(".infoDate");
   if (objPriority === null) {
+    // if no task was being displayed before the new task was added, and if the current task has a priority > 1, displays the new task
     if (item.priority > 1) {
       addInfoToDom(item, "priority");
     }
   } else {
+    // only checks if priority of new task > 1
     if (Number(item.priority) > 1) {
       const objInfoPriorityID = objPriority.getAttribute("id");
+      //a task displayed on info carries with it the object ID. by remove "infoP" from the ID, we get the object ID.
       const objID = objInfoPriorityID.replace("infoP", "");
       const currentItemList = createList.updateItemList(null, null, null);
       let highestpriorityobj;
       for (let i = 0; i < currentItemList.length; i++) {
         const currentitem = currentItemList[i];
         if (currentitem.itemID === objID) {
+          // compares priority of displayed task with the new task
           highestpriorityobj = highestPrioritySingle(item, currentitem);
           break;
         }
       }
+      //displays task
       addInfoToDom(highestpriorityobj, "priority");
     }
   }
+  // same thing as priority, but for due date
   if (objDate === null) {
     if (item.dueDate !== "") {
       addInfoToDom(item, "duedate");
@@ -124,9 +139,11 @@ function onAddCheckForChangesOnInfo(item) {
   }
 }
 
+//after removing a task, a project or marking a task as finished, checks to see if info needs to be changed
 function changeItemOnInfo(type) {
   if (type === "priority") {
     let objPriority;
+    // at the time the function is called, the list of items has already been updated; looks for an item to display
     const currentitems = createList.updateItemList(null, null, null);
     for (let i = 0; i < currentitems.length; i++) {
       const obj = currentitems[i];
@@ -135,6 +152,7 @@ function changeItemOnInfo(type) {
     if (objPriority !== undefined && objPriority.priority !== "1") {
       addInfoToDom(objPriority, "priority");
     } else {
+      // if no item is found, removes the div from dom
       const priorityDiv = document.querySelector(".infoPriority");
       if (priorityDiv !== null) {
         priorityDiv.remove();
@@ -158,11 +176,13 @@ function changeItemOnInfo(type) {
   }
 }
 
+// on pageload, checks for tasks from local storage with priority > 1 and displays highest priorty task, and for tasks with due date defined, displaying the closest due date
 function checkInfoFromStorage() {
   const storedItems = window.localStorage;
   if (storedItems.length === 1) {
     const projectstored = storedItems.getItem(storedItems.key(0));
     const parsedjson = JSON.parse(projectstored);
+    // if a project stored doesn't have tasks, return
     if (parsedjson.items.length === 0) {
       return;
     }
@@ -193,6 +213,7 @@ function addInfoToDom(item, type) {
   let currentitem = item;
   if (type === "priority") {
     if (infoPriority !== null) {
+      // whenever the function is called, checks to see if there was a previous task being displayed. If true, removes the task. When the function is called, we already know that the current task has a higher priority
       infoPriority.remove();
     }
     infoPriority = document.createElement("div");

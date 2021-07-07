@@ -1,5 +1,6 @@
 export { createProject };
 
+// constructor class for creating projects. each project has a title, unique name and and array of tasks(objects)
 class projectCreator {
   constructor(title, name, items) {
     this.title = title;
@@ -8,9 +9,13 @@ class projectCreator {
   }
 }
 
+// function factory for project creation
 const createProject = (function () {
   let projectsCreated = [];
+
+  //creates a new project with the constructor projectcreator
   const createNewProject = function (title, name, items) {
+    //checks if there are "projects" in storage and creates a project if there project doesn't exist in storage
     const storedItems = window.localStorage;
     for (let i = 0; i < storedItems.length; i++) {
       const objName = storedItems.key(i);
@@ -20,10 +25,13 @@ const createProject = (function () {
       }
     }
     const newProject = new projectCreator(title, name, items);
+    // saves project to local storage
     const projectForStorage = JSON.stringify(newProject);
     storedItems.setItem(newProject.name, projectForStorage);
     return newProject;
   };
+
+  // adds task to project in array projects created, and saves task to local storage
   const addItemToProject = function (project, item) {
     for (let i = 0; i < projectsCreated.length; i++) {
       const currentProject = projectsCreated[i];
@@ -69,6 +77,7 @@ const createProject = (function () {
     storedItems.setItem(project, jsonStringify);
   };
 
+  // for editing tasks, removes task from project items, and adds it again with the same ID
   const editItemInProject = function (currentItem) {
     const storedItems = window.localStorage;
     let projectInStorage = storedItems.getItem(currentItem.project);

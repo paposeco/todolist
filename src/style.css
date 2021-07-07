@@ -23,6 +23,8 @@ footer {
 
 footer p {
   text-align: left;
+  transform: rotate(0.75turn);
+  width: max-content;
 }
 
 button,
@@ -78,6 +80,7 @@ button:hover {
 
 #addnewproject {
   padding: 10px 20px;
+  font-size: 16px;
 }
 
 .addItem {
@@ -342,6 +345,8 @@ a:hover {
   }
   footer p {
     text-align: center;
+    transform: none;
+    width: 100%;
   }
   .projectDiv {
     width: 94%;
@@ -396,6 +401,8 @@ a:hover {
   }
   footer p {
     text-align: center;
+    transform: none;
+    width: 100%;
   }
   .infoDate,
   .infoPriority {
