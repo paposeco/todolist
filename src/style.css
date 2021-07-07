@@ -350,6 +350,13 @@ a:hover {
     width: 80%;
     align-self: center;
   }
+  input[type="date"],
+  input[type="text"],
+  input[type="url"],
+  select:focus,
+  textarea {
+    font-size: 16px;
+  }
 }
 
 @media screen and (min-width: 415px) and (max-width: 800px) {
