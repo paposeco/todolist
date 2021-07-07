@@ -6,7 +6,7 @@ Implementation of a todo list for the Odin Project using modules and local stora
 
 The user can create tasks on a Default list or create their own list/lists. Every list and task can be deleted; each task can also be edited. The lists/tasks are stored in localstorage.
 
-### Task
+### Tasks
 
 Each task is created using a constructor that can save the following information:
 
