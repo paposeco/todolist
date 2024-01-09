@@ -2,6 +2,8 @@
 
 [Live Demo](https://paposeco.github.io/todolist/)
 
+![to-Do](https://github.com/paposeco/todolist/assets/13892562/99a38e52-0592-4953-a176-472e23a5ebae)
+
 Implementation of a todo list for the Odin Project using modules and local storage.
 
 ## Features
